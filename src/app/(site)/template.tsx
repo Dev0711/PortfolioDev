@@ -1,6 +1,4 @@
-import { PageTransition } from "@/components/site/page-transition";
-
-/** A template re-mounts on every navigation, which replays the enter transition. */
+/** A template re-mounts on every navigation; pages render without a transition curtain. */
 export default function SiteTemplate({ children }: { children: React.ReactNode }) {
-  return <PageTransition>{children}</PageTransition>;
+  return children;
 }

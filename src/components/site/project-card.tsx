@@ -27,57 +27,49 @@ export function ProjectCard({
     <Spotlight
       as="article"
       className={cn(
-        "group rounded-2xl border border-line bg-surface/60 transition-colors duration-500 hover:border-line-strong",
+        "group border border-line bg-surface transition-[border-color,box-shadow,transform] duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-ink hover:shadow-[var(--shadow-hard)]",
         className,
       )}
     >
       <Link
         href={`/work/${project.slug}`}
-        className="flex h-full flex-col rounded-2xl p-3 md:p-4"
+        className="flex h-full flex-col"
         data-cursor="View"
         aria-label={`${project.title} — view case study`}
       >
-        <div className={cn("relative overflow-hidden rounded-xl", wide ? "aspect-[16/9]" : "aspect-[4/3]")}>
-          <div className="absolute inset-0 transition-transform duration-[1.2s] ease-out-expo group-hover:-translate-y-1 group-hover:scale-[1.06]">
+        <div className={cn("relative overflow-hidden border-b border-line bg-base", wide ? "aspect-[16/9]" : "aspect-[16/10]")}>
+          <div className="absolute inset-0 transition-transform duration-300 ease-out-expo group-hover:scale-[1.02]">
             <ProjectCover project={project} priority={priority} />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-base/70 via-transparent to-transparent opacity-80 transition-opacity duration-700 group-hover:opacity-40" />
-          <div className="absolute left-4 top-4 flex items-center gap-2">
-            <span className="chip !border-line-strong bg-base/60 backdrop-blur">{pad2(index + 1)}</span>
+          <div className="absolute left-3 top-3 flex items-center gap-2">
+            <span className="chip !bg-base">{pad2(index + 1)}</span>
             {project.featured ? (
-              <span className="chip !border-signal/40 bg-base/60 !text-signal backdrop-blur">Featured</span>
+              <span className="chip !border-signal !bg-signal !text-background">Featured</span>
             ) : null}
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col px-2 pb-3 pt-6 md:px-3">
+        <div className="flex flex-1 flex-col p-5">
           <div className="flex items-start justify-between gap-6">
             <div className="min-w-0">
-              <p className="label mb-3">
+              <p className="label mb-2.5 !text-signal">
                 {[project.category, project.timeframe].filter(Boolean).join(" · ") || "Project"}
               </p>
-              <h3 className="title transition-transform duration-700 ease-out-expo group-hover:translate-x-1.5">
+              <h3 className="title !text-[1.25rem] transition-colors group-hover:text-signal">
                 {project.title}
               </h3>
             </div>
-            <span className="relative mt-1 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line-strong transition-colors duration-500 group-hover:border-signal group-hover:bg-signal group-hover:text-background">
-              <ArrowUpRight
-                aria-hidden
-                className="size-4 transition-transform duration-500 ease-out-expo group-hover:translate-x-6 group-hover:-translate-y-6"
-              />
-              <ArrowUpRight
-                aria-hidden
-                className="absolute size-4 -translate-x-6 translate-y-6 transition-transform duration-500 ease-out-expo group-hover:translate-x-0 group-hover:translate-y-0"
-              />
+            <span className="icon-btn relative mt-0.5 overflow-hidden group-hover:border-signal group-hover:bg-signal group-hover:text-background">
+              <ArrowUpRight aria-hidden className="size-4" />
             </span>
           </div>
 
           {project.summary ? (
-            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-ink-dim">{project.summary}</p>
+            <p className="mt-3 max-w-xl text-[1rem] leading-[1.5] text-ink-dim">{project.summary}</p>
           ) : null}
 
           {project.technologies.length > 0 ? (
-            <ul className="mt-auto flex flex-wrap gap-2 pt-6" aria-label="Technologies">
+            <ul className="mt-auto flex flex-wrap gap-1.5 pt-5" aria-label="Technologies">
               {project.technologies.slice(0, 5).map((tech) => (
                 <li key={tech} className="chip">
                   {tech}

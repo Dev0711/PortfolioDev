@@ -33,28 +33,28 @@ export default async function ContactPage() {
     <>
       <PageHero index="03" eyebrow="Contact" heading="Let's *talk.*" body={profile.contact_intro} seed={53} />
 
-      <section className="shell section grid gap-16 md:grid-cols-12">
+      <section className="shell section grid gap-12 md:grid-cols-12">
         <div className="md:col-span-5">
           <Reveal>
-            <p className="label mb-8">Direct</p>
+            <p className="eyebrow mb-4">Direct</p>
           </Reveal>
-          <Stagger as="ul" className="border-t border-line">
+          <Stagger as="ul" className="panel">
             {channels.map((channel) => (
-              <StaggerItem as="li" key={channel.label + channel.url} className="border-b border-line">
+              <StaggerItem as="li" key={channel.label + channel.url} className="border-b border-line last:border-b-0">
                 <a
                   href={channel.url}
-                  className="group flex items-center justify-between gap-6 py-6"
+                  className="group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-[var(--signal-tint)]"
                   {...(isExternal(channel.url) && !channel.url.startsWith("mailto:")
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
                   <span className="min-w-0">
-                    <span className="label mb-2 block">{channel.label}</span>
-                    <span className="block truncate text-xl tracking-tight transition-transform duration-500 ease-out-expo group-hover:translate-x-1.5 md:text-2xl">
+                    <span className="label mb-1 block !text-ink-dim">{channel.label}</span>
+                    <span className="block truncate text-[1.08rem] transition-colors group-hover:text-signal">
                       {channel.value}
                     </span>
                   </span>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line-strong transition-colors duration-500 group-hover:border-signal group-hover:bg-signal group-hover:text-background">
+                  <span className="icon-btn group-hover:border-signal group-hover:text-signal">
                     <channel.icon className="size-4" aria-hidden />
                   </span>
                 </a>
@@ -62,7 +62,7 @@ export default async function ContactPage() {
             ))}
           </Stagger>
 
-          <Reveal delay={0.2} className="label mt-8 space-y-2">
+          <Reveal delay={0.2} className="label mt-5 space-y-1.5">
             {profile.location ? <p>Based in {profile.location}</p> : null}
             <p>
               Local time <LocalClock timezone={profile.timezone} />
@@ -72,7 +72,7 @@ export default async function ContactPage() {
 
         <div className="md:col-span-6 md:col-start-7">
           <Reveal>
-            <p className="label mb-8">Send a message</p>
+            <p className="eyebrow mb-4">Send a message</p>
           </Reveal>
           <Reveal delay={0.1}>
             <ContactForm />

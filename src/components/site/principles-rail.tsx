@@ -82,25 +82,26 @@ export function PrinciplesRail({ items }: { items: TextBlock[] }) {
     >
       <ol
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-[clamp(1.25rem,4vw,4rem)] pb-4 [scrollbar-width:none] group-data-[pinned=true]/rail:snap-none group-data-[pinned=true]/rail:w-max group-data-[pinned=true]/rail:overflow-visible group-data-[pinned=true]/rail:pb-0 lg:gap-8 [&::-webkit-scrollbar]:hidden"
+        style={{ paddingInline: "max(1rem, calc((100vw - 75rem) / 2 + 2rem))" }}
+        className="flex snap-x snap-mandatory gap-3.5 overflow-x-auto pb-4 [scrollbar-width:none] group-data-[pinned=true]/rail:snap-none group-data-[pinned=true]/rail:w-max group-data-[pinned=true]/rail:overflow-visible group-data-[pinned=true]/rail:pb-0 lg:gap-4 [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item, i) => (
           <li
             key={item.title + i}
-            className="relative flex min-h-[22rem] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-2xl border border-line bg-surface/70 p-7 sm:w-[26rem] lg:min-h-[28rem] lg:w-[34rem] lg:p-10"
+            className="relative flex min-h-[18rem] w-[82vw] shrink-0 snap-start flex-col justify-between border border-line bg-surface p-6 sm:w-[24rem] lg:min-h-[22rem] lg:w-[30rem] lg:p-8"
           >
             <div className="flex items-center justify-between">
               <span className="label">Principle</span>
-              <span className="font-mono text-sm text-signal">
+              <span className="font-mono text-[0.8rem] text-signal">
                 {pad2(i + 1)}
                 <span className="text-ink-faint"> / {pad2(items.length)}</span>
               </span>
             </div>
             <div>
-              <h3 className="font-serif text-4xl italic leading-[1.05] tracking-tight text-ink lg:text-6xl">
+              <h3 className="font-display text-[1.5rem] font-semibold uppercase leading-[1.05] tracking-[-0.02em] text-ink lg:text-[1.9rem]">
                 {item.title}
               </h3>
-              {item.body ? <p className="mt-6 max-w-md leading-relaxed text-ink-dim">{item.body}</p> : null}
+              {item.body ? <p className="mt-4 max-w-md leading-[1.6] text-ink-dim">{item.body}</p> : null}
             </div>
           </li>
         ))}

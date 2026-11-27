@@ -1,139 +1,139 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { NavItem } from "@/lib/types";
-import { cn, isExternal, pad2 } from "@/lib/utils";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
+import { cn, isExternal } from "@/lib/utils";
 
 export function Header({ name, title, nav }: { name: string; title: string; nav: NavItem[] }) {
   const pathname = usePathname();
-  const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const links = nav.filter((item) => item.visible);
 
-  // Hide on scroll down, reveal on scroll up.
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    setHidden(latest > previous && latest > 160);
-    setScrolled(latest > 24);
-  });
-
-  // Lock scroll while the mobile menu is open; close with Escape.
+  // Close the mobile menu on Escape or a click outside it; links close it on click.
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
-    document.body.style.overflow = "hidden";
+    const onClick = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
+    document.addEventListener("click", onClick);
     return () => {
-      document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
+      document.removeEventListener("click", onClick);
     };
   }, [open]);
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const external = (href: string) => (isExternal(href) ? { target: "_blank", rel: "noopener noreferrer" } : {});
 
   return (
-    <>
-      <motion.header
-        className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500",
-          scrolled && !open ? "border-b border-line bg-base/70 backdrop-blur-xl" : "border-b border-transparent",
-        )}
-        animate={{ y: hidden && !open ? "-100%" : "0%" }}
-        transition={{ duration: 0.5, ease: EASE }}
-      >
-        <div className="shell flex h-16 items-center justify-between md:h-20">
-          <Link href="/" className="group flex items-baseline gap-3" onClick={() => setOpen(false)}>
-            <span className="relative flex h-2 w-2 self-center">
-              <span className="absolute inset-0 rounded-full bg-signal [animation:pulse-dot_2.4s_ease-in-out_infinite]" />
-            </span>
-            <span className="text-[0.9375rem] font-medium tracking-tight">{name}</span>
-            <span className="label hidden lg:inline">{title}</span>
-          </Link>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-[var(--header-bg)] backdrop-blur-md">
+      <div ref={menuRef} className="relative mx-auto flex h-14 max-w-[85rem] items-center gap-2.5 px-3 sm:h-16 sm:px-7">
+        <Link
+          href="/"
+          className="group mr-auto flex min-w-0 items-center gap-2.5 font-display text-[1.1rem] font-semibold uppercase tracking-[-0.02em] transition-colors hover:text-signal"
+        >
+          <span aria-hidden className="relative block size-[1.1rem] shrink-0 border-[3px] border-signal">
+            <span className="absolute inset-[3px] bg-ink transition-colors group-hover:bg-signal" />
+          </span>
+          <span className="truncate">{name}</span>
+          <span className="sr-only"> — {title}</span>
+        </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-9 md:flex">
-            {links.map((item, i) => (
+        <nav aria-label="Primary" className="mr-2 hidden items-center gap-6 md:flex">
+          {links.map((item) => (
+            <Link
+              key={item.href + item.label}
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              className="inline-flex min-h-9 items-center font-mono text-[0.78rem] font-medium uppercase tracking-[0.08em] text-ink-dim transition-colors hover:text-signal aria-[current=page]:text-signal"
+              {...external(item.href)}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <ThemeToggle />
+
+        <button
+          type="button"
+          className={cn("icon-btn md:hidden", open && "!border-signal !text-signal")}
+          aria-expanded={open}
+          aria-controls="site-menu"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? <X className="size-4" aria-hidden /> : <Menu className="size-4" aria-hidden />}
+        </button>
+
+        {open ? (
+          <nav
+            id="site-menu"
+            aria-label="Mobile"
+            className="panel absolute right-3 top-[calc(100%+1px)] z-50 flex max-h-[calc(100svh-5rem)] w-[min(21rem,calc(100vw-1.5rem))] flex-col overflow-y-auto px-4 py-2 md:hidden"
+          >
+            {[{ label: "Home", href: "/", visible: true }, ...links].map((item, i) => (
               <Link
                 key={item.href + item.label}
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
-                className="link-line text-sm text-ink-dim transition-colors hover:text-ink aria-[current=page]:text-ink"
-                {...(isExternal(item.href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className={cn(
+                  "flex min-h-12 items-center justify-between px-2 py-2 font-mono text-[0.8rem] font-medium uppercase tracking-[0.12em] text-ink-dim transition-colors hover:bg-[var(--signal-tint)] hover:text-signal aria-[current=page]:text-signal",
+                  i > 0 && "border-t border-line",
+                )}
+                onClick={() => setOpen(false)}
+                {...external(item.href)}
               >
-                <span className="label mr-2 !text-[0.625rem]">{pad2(i + 1)}</span>
                 {item.label}
+                <span aria-hidden>→</span>
               </Link>
             ))}
           </nav>
-
-          <button
-            type="button"
-            className="relative -mr-2 flex h-11 w-11 items-center justify-center md:hidden"
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
-            onClick={() => setOpen((value) => !value)}
-          >
-            <span
-              className={cn(
-                "absolute h-px w-6 bg-ink transition-transform duration-500 ease-out-expo",
-                open ? "rotate-45" : "-translate-y-1",
-              )}
-            />
-            <span
-              className={cn(
-                "absolute h-px w-6 bg-ink transition-transform duration-500 ease-out-expo",
-                open ? "-rotate-45" : "translate-y-1",
-              )}
-            />
-          </button>
-        </div>
-      </motion.header>
-
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            id="mobile-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu"
-            className="fixed inset-0 z-40 flex flex-col bg-base px-5 pb-10 pt-28 md:hidden"
-            initial={{ clipPath: "inset(0 0 100% 0)" }}
-            animate={{ clipPath: "inset(0 0 0% 0)" }}
-            exit={{ clipPath: "inset(0 0 100% 0)" }}
-            transition={{ duration: 0.6, ease: EASE }}
-          >
-            <nav aria-label="Mobile" className="flex flex-col">
-              {[{ label: "Home", href: "/", visible: true }, ...links].map((item, i) => (
-                <motion.div
-                  key={item.href + item.label}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + i * 0.06, duration: 0.6, ease: EASE }}
-                  className="border-b border-line"
-                >
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    aria-current={isActive(item.href) ? "page" : undefined}
-                    className="flex items-baseline justify-between py-5 text-4xl font-medium tracking-tight aria-[current=page]:text-signal"
-                  >
-                    {item.label}
-                    <span className="label">{pad2(i)}</span>
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-            <p className="label mt-auto">{title}</p>
-          </motion.div>
         ) : null}
-      </AnimatePresence>
-    </>
+      </div>
+    </header>
+  );
+}
+
+/** Light / dark switch. The choice is stored and applied before paint by the site layout. */
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
+function ThemeToggle() {
+  const dark = useSyncExternalStore(
+    subscribeTheme,
+    () => document.documentElement.dataset.theme === "dark",
+    () => false,
+  );
+
+  const toggle = () => {
+    const next = !dark;
+    document.documentElement.dataset.theme = next ? "dark" : "light";
+    try {
+      localStorage.setItem("site-theme", next ? "dark" : "light");
+    } catch {
+      // Storage can be unavailable (private mode); the toggle still works for this page view.
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className="icon-btn"
+      onClick={toggle}
+      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+      title={dark ? "Light theme" : "Dark theme"}
+    >
+      {dark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+    </button>
   );
 }

@@ -37,8 +37,8 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-5 border-y border-line py-5 md:flex-row md:items-center md:justify-between">
-        <div role="group" aria-label="Filter by category" className="-mx-1 flex flex-wrap gap-1">
+      <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
+        <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-1.5">
           {categories.map((item) => {
             const active = item.name === category;
             return (
@@ -48,14 +48,14 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
                 aria-pressed={active}
                 onClick={() => setCategory(item.name)}
                 className={cn(
-                  "relative rounded-full px-4 py-2 text-sm transition-colors duration-300",
-                  active ? "text-background" : "text-ink-dim hover:text-ink",
+                  "relative min-h-9 border px-3 py-1.5 font-mono text-[0.75rem] uppercase tracking-[0.06em] transition-colors duration-200",
+                  active ? "border-ink text-background" : "border-line text-ink-dim hover:border-signal hover:text-signal",
                 )}
               >
                 {active ? (
                   <motion.span
                     layoutId="category-pill"
-                    className="absolute inset-0 rounded-full bg-ink"
+                    className="absolute inset-0 bg-ink"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 ) : null}
@@ -70,20 +70,20 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
 
         <label className="relative flex items-center md:w-72">
           <span className="sr-only">Search projects</span>
-          <Search aria-hidden className="pointer-events-none absolute left-0 size-4 text-ink-faint" />
+          <Search aria-hidden className="pointer-events-none absolute left-3 size-4 text-ink-faint" />
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name or technology"
-            className="h-10 w-full border-b border-line-strong bg-transparent pl-7 pr-8 text-sm text-ink placeholder:text-ink-faint focus:border-signal focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="h-10 w-full border border-line bg-surface pl-9 pr-9 font-mono text-[0.82rem] text-ink placeholder:text-ink-faint focus:border-signal focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {query ? (
             <button
               type="button"
               aria-label="Clear search"
               onClick={() => setQuery("")}
-              className="absolute right-0 flex size-8 items-center justify-center text-ink-faint hover:text-ink"
+              className="absolute right-1 flex size-8 items-center justify-center text-ink-faint hover:text-ink"
             >
               <X className="size-4" />
             </button>
@@ -96,7 +96,7 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
       </p>
 
       {results.length > 0 ? (
-        <motion.ul layout className="mt-6 grid gap-5 md:grid-cols-2 md:gap-6">
+        <motion.ul layout className="mt-5 grid gap-4 md:grid-cols-2">
           <AnimatePresence mode="popLayout" initial={false}>
             {results.map((project, i) => (
               <motion.li
@@ -113,12 +113,12 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
           </AnimatePresence>
         </motion.ul>
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-line-strong px-6 py-20 text-center">
+        <div className="mt-6 border border-dashed border-line-strong px-6 py-16 text-center">
           <p className="title">No projects match.</p>
           <p className="mt-3 text-ink-dim">Try a different category or search term.</p>
           <button
             type="button"
-            className="btn btn-ghost mt-8"
+            className="btn mt-6"
             onClick={() => {
               setCategory("All");
               setQuery("");

@@ -9,7 +9,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-serif: var(--font-source-serif), "Iowan Old Style", Georgia, serif;
+  --font-display: var(--font-space-grotesk), "Helvetica Neue", Arial, sans-serif;
+  --font-pixel: var(--font-geist-pixel), var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-heading: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
   --color-ink: var(--ink);
   --color-ink-dim: var(--ink-dim);
@@ -61,7 +63,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* The site ships a single dark theme; <html> always carries .dark. */
+/* Admin theme (dark). The public site overrides these below via html:has(.site). */
 :root,
 .dark {
   --radius: 0.625rem;
@@ -75,7 +77,7 @@
   --ink-faint: #8a887f;
   --line: rgb(236 232 223 / 0.09);
   --line-strong: rgb(236 232 223 / 0.18);
-  --signal: #ff6a3d; /* overridden from site settings */
+  --signal: #ec4d36; /* overridden from site settings */
   --signal-alt: #8b9cff; /* overridden from site settings */
 
   /* ── shadcn/ui tokens mapped onto the identity ───────────────────── */
@@ -112,6 +114,74 @@
   --sidebar-ring: var(--signal);
 }
 
+/* ── Public site theme ─────────────────────────────────────────────
+   "Blueprint on paper": warm paper, black ink, one red-orange accent.
+   Applies only to pages that render the .site wrapper, so the admin keeps
+   its own dark theme. Light by default; the header toggle sets
+   html[data-theme="dark"]. */
+html:has(.site),
+.site-preview {
+  color-scheme: light;
+  --radius: 0;
+
+  --base: #fafaf5;
+  --surface: #f3f1e8;
+  --surface-2: #ece9dc;
+  --ink: #1a1a1a;
+  --ink-dim: #4a4a4a;
+  --ink-faint: #6e6e6b;
+  --line: rgb(26 26 26 / 0.16);
+  --line-strong: rgb(26 26 26 / 0.4);
+  --paper-dot: rgb(26 26 26 / 0.08);
+  --code-bg: #efece0;
+  --header-bg: rgb(250 250 245 / 0.94);
+  --shadow-hard: 3px 3px 0 var(--ink);
+  --shadow-hard-lg: 5px 5px 0 var(--ink);
+
+  --popover: var(--base);
+  --primary-foreground: var(--base);
+  --sidebar-primary-foreground: var(--base);
+  --input: var(--line-strong);
+}
+html[data-theme="dark"]:has(.site) {
+  color-scheme: dark;
+  --base: #0e0d0c;
+  --surface: #1a1817;
+  --surface-2: #24211f;
+  --ink: #e8e6dc;
+  --ink-dim: #b1afa8;
+  --ink-faint: #8f8d88;
+  --line: rgb(232 230 220 / 0.18);
+  --line-strong: rgb(232 230 220 / 0.4);
+  --paper-dot: rgb(232 230 220 / 0.08);
+  --code-bg: #1a1817;
+  --header-bg: rgb(14 13 12 / 0.94);
+}
+/* Declared on the wrapper so it follows the accent chosen in site settings. */
+.site,
+.site-preview {
+  --signal-tint: color-mix(in oklab, var(--signal) 10%, transparent);
+}
+html:has(.site) body {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.62;
+  background-image: radial-gradient(var(--paper-dot) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-attachment: fixed;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+html:has(.site) {
+  scroll-padding-top: 5rem;
+}
+@media (max-width: 600px) {
+  html:has(.site) body {
+    font-size: 17px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -136,162 +206,188 @@
 }
 
 @layer components {
-  /* Layout */
+  /* ── Layout ─────────────────────────────────────────────────────── */
   .shell {
     width: 100%;
-    max-width: 92rem;
+    max-width: 75rem;
     margin-inline: auto;
-    padding-inline: clamp(1.25rem, 4vw, 4rem);
+    padding-inline: 2rem;
+  }
+  @media (max-width: 600px) {
+    .shell {
+      padding-inline: 1rem;
+    }
   }
   .section {
-    padding-block: clamp(5rem, 12vw, 11rem);
+    padding-block: clamp(2.25rem, 6vw, 3.5rem);
   }
 
-  /* Type scale */
+  /* ── Type scale (Space Grotesk headings, Source Serif body, JetBrains Mono labels) ── */
   .display {
-    font-size: clamp(2.75rem, 8.2vw, 8.5rem);
-    line-height: 0.94;
-    letter-spacing: -0.045em;
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 5.2vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  /* Pixel masthead title, as on the reference design. */
+  .display-pixel {
+    font-family: var(--font-pixel);
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: 0;
+    font-size: clamp(2.6rem, 7.2vw, 4.9rem);
+    line-height: 0.96;
+    text-transform: uppercase;
+    color: var(--signal);
     text-wrap: balance;
   }
   .headline {
-    font-size: clamp(2rem, 4.6vw, 4.5rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: clamp(1.48rem, 2.37vw, 2.15rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    text-transform: uppercase;
     text-wrap: balance;
   }
   .title {
-    font-size: clamp(1.375rem, 2.2vw, 2rem);
-    line-height: 1.15;
+    font-family: var(--font-display);
+    font-size: clamp(1.07rem, 1.4vw, 1.18rem);
+    line-height: 1.1;
     letter-spacing: -0.02em;
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
   }
   .lede {
-    font-size: clamp(1.0625rem, 1.35vw, 1.3125rem);
-    line-height: 1.55;
-    color: var(--ink-dim);
-    max-width: 38rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.05rem, 1.7vw, 1.2rem);
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 45rem;
     text-wrap: pretty;
   }
   .label {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    line-height: 1.2;
-    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-faint);
   }
-  .accent-serif {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.02em;
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.3;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--signal);
   }
-
-  /* Hairline grid used behind sections */
-  .blueprint {
-    background-image:
-      linear-gradient(to right, var(--line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
-    background-size: clamp(3rem, 6vw, 6rem) clamp(3rem, 6vw, 6rem);
-    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
+  /* Words wrapped in *asterisks* in headlines. */
+  .accent-serif {
+    color: var(--signal);
   }
-
-  /* Film grain overlay */
-  .grain {
-    pointer-events: none;
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    opacity: 0.06;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-
-  /* Link with a sliding underline */
-  .link-line {
-    position: relative;
-    display: inline-block;
-  }
-  .link-line::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -0.15em;
-    width: 100%;
-    height: 1px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.5s var(--ease-out-expo);
-  }
-  .link-line:hover::after,
-  .link-line:focus-visible::after,
-  .link-line[aria-current="page"]::after {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-
-  /* Pill button */
-  .btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    height: 3.25rem;
-    padding-inline: 1.5rem;
-    border-radius: 999px;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    isolation: isolate;
-    transition:
-      color 0.4s var(--ease-out-expo),
-      border-color 0.4s var(--ease-out-expo);
-  }
-  .btn::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    transform: translateY(101%);
-    transition: transform 0.5s var(--ease-out-expo);
-  }
-  .btn:hover::before,
-  .btn:focus-visible::before {
-    transform: translateY(0);
-  }
-  .btn-primary {
-    background: var(--ink);
-    color: #0a0b0d;
-  }
-  .btn-primary::before {
-    background: var(--signal);
-  }
-  .btn-ghost {
-    border: 1px solid var(--line-strong);
+  .display-pixel .accent-serif {
     color: var(--ink);
   }
-  .btn-ghost::before {
-    background: var(--ink);
+
+  /* Hairline grid */
+  .blueprint {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
-  .btn-ghost:hover,
-  .btn-ghost:focus-visible {
-    color: #0a0b0d;
-    border-color: var(--ink);
+
+  /* Underlined text link */
+  .link-line {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+    transition:
+      color 0.18s ease,
+      text-decoration-color 0.18s ease;
+  }
+  .link-line:hover,
+  .link-line:focus-visible,
+  .link-line[aria-current="page"] {
+    color: var(--signal);
+    text-decoration-color: currentColor;
+  }
+
+  /* ── Buttons: square, 1px rule, mono label ──────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--ink);
+    background: var(--base);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      transform 160ms var(--ease-out-expo),
+      background-color 180ms ease,
+      color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .btn:hover,
+  .btn:focus-visible {
+    background: var(--ink);
+    color: var(--base);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--base);
+  }
+  .btn-primary:hover,
+  .btn-primary:focus-visible {
+    background: var(--signal);
+    color: var(--base);
+    box-shadow: var(--shadow-hard);
+    transform: translate(-2px, -2px);
   }
   .btn .arrow {
-    transition: transform 0.5s var(--ease-out-expo);
+    transition: transform 0.2s var(--ease-out-expo);
   }
   .btn:hover .arrow,
   .btn:focus-visible .arrow {
-    transform: translate(3px, -3px);
+    transform: translate(2px, -2px);
+  }
+
+  /* Square icon button (header controls, card arrows) */
+  .icon-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+  .icon-btn:hover,
+  .icon-btn:focus-visible {
+    border-color: var(--signal);
+    color: var(--signal);
   }
 
   /* Tag / chip */
@@ -299,18 +395,26 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    height: 1.75rem;
-    padding-inline: 0.7rem;
+    min-height: 1.6rem;
+    padding: 0.15rem 0.5rem;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    background: var(--surface);
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.04em;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--ink-dim);
     white-space: nowrap;
   }
 
-  /* Card with pointer-tracked lighting (see components/site/spotlight.tsx) */
+  /* Boxed panel with a hard offset shadow */
+  .panel {
+    border: 1px solid var(--ink);
+    background: var(--base);
+    box-shadow: var(--shadow-hard);
+  }
+
+  /* Card with pointer-tracked tint (see components/motion/spotlight.tsx) */
   .spotlight {
     position: relative;
     isolation: isolate;
@@ -320,14 +424,13 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    border-radius: inherit;
     opacity: 0;
     background: radial-gradient(
-      28rem circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in oklab, var(--signal) 14%, transparent),
+      24rem circle at var(--mx, 50%) var(--my, 50%),
+      var(--signal-tint),
       transparent 60%
     );
-    transition: opacity 0.5s ease;
+    transition: opacity 0.3s ease;
   }
   .spotlight:hover::before,
   .spotlight:focus-within::before {
@@ -335,51 +438,55 @@
   }
 
   /* Marquee */
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
   .marquee-track {
     display: flex;
     width: max-content;
-    animation: marquee var(--marquee-duration, 40s) linear infinite;
+    animation: marquee var(--marquee-duration, 48s) linear infinite;
   }
   .marquee:hover .marquee-track {
     animation-play-state: paused;
   }
 
-  /* Rich text (case studies, about) */
+  /* ── Rich text (case studies, about) ────────────────────────────── */
   .prose-site {
-    color: var(--ink-dim);
-    font-size: clamp(1rem, 1.15vw, 1.125rem);
+    font-family: var(--font-serif);
+    color: var(--ink);
+    font-size: clamp(1.0625rem, 1.2vw, 1.125rem);
     line-height: 1.7;
-    max-width: 44rem;
+    max-width: 42rem;
   }
   .prose-site > * + * {
-    margin-top: 1.25em;
+    margin-top: 1.1em;
   }
   .prose-site h2,
   .prose-site h3,
   .prose-site h4 {
+    font-family: var(--font-display);
     color: var(--ink);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.02em;
-    line-height: 1.2;
+    line-height: 1.15;
     margin-top: 2em;
   }
   .prose-site h2 {
-    font-size: 1.6em;
+    font-size: 1.45em;
+    text-transform: uppercase;
   }
   .prose-site h3 {
-    font-size: 1.3em;
+    font-size: 1.2em;
   }
   .prose-site h4 {
-    font-size: 1.1em;
+    font-size: 1.05em;
   }
   .prose-site strong {
-    color: var(--ink);
     font-weight: 600;
   }
   .prose-site a {
-    color: var(--ink);
+    color: var(--signal);
     text-decoration: underline;
-    text-decoration-color: var(--signal);
     text-underline-offset: 0.2em;
   }
   .prose-site ul {
@@ -388,56 +495,59 @@
   }
   .prose-site ul > li {
     position: relative;
-    padding-left: 1.5rem;
+    padding-left: 1.4rem;
   }
   .prose-site ul > li::before {
     content: "";
     position: absolute;
-    left: 0;
-    top: 0.8em;
-    width: 0.6rem;
-    height: 1px;
-    background: var(--signal);
+    left: 0.15rem;
+    top: 0.62em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border: 1px solid var(--signal);
   }
   .prose-site ol {
     list-style: decimal;
     padding-left: 1.25rem;
   }
+  .prose-site ol > li::marker {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--signal);
+  }
   .prose-site li + li {
-    margin-top: 0.5em;
+    margin-top: 0.45em;
   }
   .prose-site blockquote {
-    border-left: 1px solid var(--signal);
+    border-left: 2px solid var(--signal);
     padding-left: 1.25rem;
-    color: var(--ink);
-    font-family: var(--font-serif);
     font-style: italic;
-    font-size: 1.35em;
-    line-height: 1.35;
+    font-size: 1.15em;
+    line-height: 1.5;
   }
   .prose-site code {
     font-family: var(--font-mono);
-    font-size: 0.875em;
-    background: var(--surface-2);
+    font-size: 0.86em;
+    background: var(--code-bg);
     border: 1px solid var(--line);
-    border-radius: 0.3rem;
-    padding: 0.1em 0.35em;
-    color: var(--ink);
+    padding: 0.08em 0.35em;
+    color: var(--signal);
   }
   .prose-site pre {
-    background: var(--surface);
+    background: var(--code-bg);
     border: 1px solid var(--line);
-    border-radius: 0.75rem;
-    padding: 1.1rem 1.25rem;
+    padding: 1rem 1.15rem;
     overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.6;
   }
   .prose-site pre code {
     background: none;
     border: 0;
     padding: 0;
+    color: var(--ink);
   }
   .prose-site img {
-    border-radius: 0.75rem;
     border: 1px solid var(--line);
   }
   .prose-site hr {

@@ -32,13 +32,13 @@ export default async function PreviewProjectPage({ params }: PageProps<"/admin/p
 
   return (
     // Full-bleed: break out of the admin content column and cover the sidebar.
-    <div style={theme} className="fixed inset-0 z-[60] overflow-y-auto bg-base text-[1rem] text-ink">
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-xs text-amber-200 backdrop-blur">
+    <div style={theme} className="site-preview fixed inset-0 z-[60] overflow-y-auto bg-base font-serif text-[1.125rem] leading-[1.62] text-ink">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-amber-500/40 bg-amber-100 px-4 py-2.5 font-mono text-xs text-amber-900">
         <p className="flex items-center gap-2">
           <EyeOff className="size-3.5" aria-hidden />
           Preview · {project.status === "published" ? "this project is live" : "draft, not visible to the public"}
         </p>
-        <Link href={`/admin/projects/${project.id}`} className="flex items-center gap-1.5 hover:text-white">
+        <Link href={`/admin/projects/${project.id}`} className="flex items-center gap-1.5 hover:text-black">
           <ArrowLeft className="size-3.5" aria-hidden /> Back to editor
         </Link>
       </div>

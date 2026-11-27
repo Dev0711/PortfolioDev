@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Reveal, RevealText } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 
-/** Shared section header: numbered mono eyebrow, large headline, optional body + CTA. */
+/** Shared section header: accent mono eyebrow, uppercase headline, serif lede and optional CTA alongside. */
 export function SectionHeading({
   index,
   eyebrow,
@@ -23,31 +23,33 @@ export function SectionHeading({
   className?: string;
   as?: "h1" | "h2";
 }) {
+  const aside = body || (ctaLabel && ctaHref);
   return (
-    <div className={cn("grid gap-8 md:grid-cols-12 md:gap-6", className)}>
-      <Reveal className="md:col-span-3">
-        <p className="label flex items-center gap-3">
-          {index ? <span className="text-signal">{index}</span> : null}
-          <span className="h-px w-8 bg-line-strong" aria-hidden />
-          {eyebrow}
-        </p>
-      </Reveal>
-      <div className="md:col-span-9">
-        {heading ? (
-          <RevealText as={as} text={heading} className={as === "h1" ? "display" : "headline max-w-4xl"} />
-        ) : null}
-        {body || (ctaLabel && ctaHref) ? (
-          <Reveal delay={0.1} className="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-            {body ? <p className="lede">{body}</p> : <span />}
-            {ctaLabel && ctaHref ? (
-              <Link href={ctaHref} className="btn btn-ghost shrink-0 self-start md:self-auto">
-                {ctaLabel}
-                <ArrowUpRight className="arrow size-4" aria-hidden />
-              </Link>
-            ) : null}
+    <div className={cn("grid gap-x-14 gap-y-5", aside && "lg:grid-cols-2 lg:items-end", className)}>
+      <div>
+        {eyebrow || index ? (
+          <Reveal y={6}>
+            <p className="eyebrow">
+              {index ? <span>{index} · </span> : null}
+              {eyebrow}
+            </p>
           </Reveal>
         ) : null}
+        {heading ? (
+          <RevealText as={as} text={heading} className={cn(as === "h1" ? "display" : "headline", "mt-3 max-w-[24ch]")} />
+        ) : null}
       </div>
+      {aside ? (
+        <Reveal delay={0.08} y={6} className="flex flex-col items-start gap-4">
+          {body ? <p className="text-[1.08rem] leading-[1.6]">{body}</p> : null}
+          {ctaLabel && ctaHref ? (
+            <Link href={ctaHref} className="btn">
+              {ctaLabel}
+              <ArrowUpRight className="arrow size-4" aria-hidden />
+            </Link>
+          ) : null}
+        </Reveal>
+      ) : null}
     </div>
   );
 }

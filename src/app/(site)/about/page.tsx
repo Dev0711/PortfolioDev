@@ -2,7 +2,6 @@ import { ArrowUpRight, Download } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Magnetic } from "@/components/motion/magnetic";
 import { Parallax } from "@/components/motion/parallax";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { Spotlight } from "@/components/motion/spotlight";
@@ -37,9 +36,9 @@ export default async function AboutPage() {
       <PageHero index="02" eyebrow="About" heading={profile.about_intro || profile.title} seed={41} />
 
       {/* Introduction */}
-      <section className="shell section grid gap-12 md:grid-cols-12" aria-labelledby="about-intro">
+      <section className="shell section grid gap-10 md:grid-cols-12" aria-labelledby="about-intro">
         <Reveal className="md:col-span-5">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-line bg-surface">
+          <div className="relative aspect-[4/5] overflow-hidden border border-ink bg-surface shadow-[var(--shadow-hard)]">
             <Parallax className="absolute -inset-y-8 inset-x-0" amount={60}>
               {profile.avatar_url ? (
                 <Image
@@ -58,35 +57,32 @@ export default async function AboutPage() {
 
         <div className="md:col-span-6 md:col-start-7">
           <Reveal>
-            <p id="about-intro" className="label mb-6">
+            <p id="about-intro" className="eyebrow mb-3">
               Introduction
             </p>
-            <h2 className="title">
+            <h2 className="headline">
               {profile.name}
-              {profile.title ? <span className="text-ink-dim"> — {profile.title}</span> : null}
+              
             </h2>
+            {profile.title ? <p className="mt-2 font-mono text-[0.8rem] text-signal">{profile.title}</p> : null}
           </Reveal>
           {profile.about_body ? (
             <Reveal delay={0.1}>
-              <div className="prose-site mt-8" dangerouslySetInnerHTML={{ __html: profile.about_body }} />
+              <div className="prose-site mt-6" dangerouslySetInnerHTML={{ __html: profile.about_body }} />
             </Reveal>
           ) : null}
-          <Reveal delay={0.2} className="mt-10 flex flex-wrap gap-3">
+          <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-2.5">
             {profile.resume_url ? (
-              <Magnetic>
-                <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                              <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                   <Download className="size-4" aria-hidden />
                   Download résumé
                 </a>
-              </Magnetic>
-            ) : null}
-            <Magnetic>
-              <Link href="/contact" className="btn btn-ghost">
+                          ) : null}
+                          <Link href="/contact" className="btn">
                 Get in touch
                 <ArrowUpRight className="arrow size-4" aria-hidden />
               </Link>
-            </Magnetic>
-          </Reveal>
+                      </Reveal>
         </div>
       </section>
 
@@ -95,14 +91,10 @@ export default async function AboutPage() {
         <section className="border-t border-line">
           <div className="shell section grid gap-10 md:grid-cols-12">
             <Reveal className="md:col-span-3">
-              <p className="label flex items-center gap-3">
-                <span className="text-signal">01</span>
-                <span className="h-px w-8 bg-line-strong" aria-hidden />
-                Career journey
-              </p>
+              <p className="eyebrow">01 · Career journey</p>
             </Reveal>
             <Reveal delay={0.1} className="md:col-span-8">
-              <div className="prose-site !max-w-3xl !text-[clamp(1.125rem,1.6vw,1.5rem)] !leading-[1.5]" dangerouslySetInnerHTML={{ __html: profile.journey }} />
+              <div className="prose-site !text-[clamp(1.08rem,1.4vw,1.2rem)]" dangerouslySetInnerHTML={{ __html: profile.journey }} />
             </Reveal>
           </div>
         </section>
@@ -113,13 +105,13 @@ export default async function AboutPage() {
         <section className="border-t border-line">
           <div className="shell section">
             <SectionHeading index="02" eyebrow="Areas of interest" heading="What I like *working on.*" />
-            <Stagger className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+            <Stagger className="mt-8 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
               {profile.interests.map((interest, i) => (
-                <StaggerItem key={interest.title + i} className="bg-base">
-                  <Spotlight className="h-full p-7 md:p-9">
-                    <p className="label mb-12">{pad2(i + 1)}</p>
+                <StaggerItem key={interest.title + i} className="h-full">
+                  <Spotlight className="h-full border border-line bg-surface p-5 transition-colors hover:border-signal">
+                    <p className="label mb-5 !text-signal">{pad2(i + 1)}</p>
                     <h3 className="title">{interest.title}</h3>
-                    {interest.body ? <p className="mt-3 leading-relaxed text-ink-dim">{interest.body}</p> : null}
+                    {interest.body ? <p className="mt-2 text-[1rem] leading-[1.5] text-ink-dim">{interest.body}</p> : null}
                   </Spotlight>
                 </StaggerItem>
               ))}
@@ -130,19 +122,19 @@ export default async function AboutPage() {
 
       {/* Technical philosophy */}
       {profile.philosophy.length > 0 ? (
-        <section className="border-t border-line bg-surface/30">
+        <section className="border-t border-line">
           <div className="shell section">
             <SectionHeading index="03" eyebrow="Technical philosophy" heading="How I think about *engineering.*" />
-            <Stagger as="ol" className="mt-16 border-t border-line">
+            <Stagger as="ol" className="mt-8 border-t border-line">
               {profile.philosophy.map((item, i) => (
                 <StaggerItem
                   as="li"
                   key={item.title + i}
-                  className="grid gap-4 border-b border-line py-8 md:grid-cols-12 md:gap-6 md:py-10"
+                  className="grid gap-2 border-b border-line py-6 md:grid-cols-12 md:gap-6"
                 >
-                  <span className="font-mono text-sm text-signal md:col-span-1">{pad2(i + 1)}</span>
-                  <h3 className="font-serif text-3xl italic leading-tight md:col-span-5 md:text-4xl">{item.title}</h3>
-                  <p className="leading-relaxed text-ink-dim md:col-span-6">{item.body}</p>
+                  <span className="pt-1 font-mono text-[0.8rem] text-signal md:col-span-1">{pad2(i + 1)}</span>
+                  <h3 className="title !text-[1.3rem] md:col-span-5">{item.title}</h3>
+                  <p className="leading-[1.6] text-ink-dim md:col-span-6">{item.body}</p>
                 </StaggerItem>
               ))}
             </Stagger>
@@ -155,7 +147,7 @@ export default async function AboutPage() {
         <section className="border-t border-line">
           <div className="shell section">
             <SectionHeading index="04" eyebrow="Experience" heading="Where I have been *building.*" />
-            <div className="mt-16">
+            <div className="mt-8">
               <ExperienceList items={experience} />
             </div>
           </div>
@@ -165,25 +157,21 @@ export default async function AboutPage() {
       {/* Education & certifications */}
       {education.length > 0 || certifications.length > 0 ? (
         <section className="border-t border-line">
-          <div className="shell section grid gap-16 md:grid-cols-2 md:gap-10">
+          <div className="shell section grid gap-12 md:grid-cols-2 md:gap-10">
             {education.length > 0 ? (
               <div>
                 <Reveal>
-                  <p className="label mb-8 flex items-center gap-3">
-                    <span className="text-signal">05</span>
-                    <span className="h-px w-8 bg-line-strong" aria-hidden />
-                    Education
-                  </p>
+                  <p className="eyebrow mb-4">05 · Education</p>
                 </Reveal>
                 <Stagger as="ul" className="border-t border-line">
                   {education.map((item) => (
-                    <StaggerItem as="li" key={item.id} className="border-b border-line py-7">
-                      <p className="label mb-3">
+                    <StaggerItem as="li" key={item.id} className="border-b border-line py-5">
+                      <p className="label mb-2">
                         {[item.start_year, item.end_year].filter(Boolean).join(" — ")}
                       </p>
                       <h3 className="title">{item.institution}</h3>
                       <p className="mt-2 text-ink-dim">{[item.degree, item.field].filter(Boolean).join(", ")}</p>
-                      {item.notes ? <p className="mt-3 text-sm leading-relaxed text-ink-dim">{item.notes}</p> : null}
+                      {item.notes ? <p className="mt-2 text-[0.98rem] leading-[1.5] text-ink-dim">{item.notes}</p> : null}
                     </StaggerItem>
                   ))}
                 </Stagger>
@@ -193,16 +181,12 @@ export default async function AboutPage() {
             {certifications.length > 0 ? (
               <div>
                 <Reveal>
-                  <p className="label mb-8 flex items-center gap-3">
-                    <span className="text-signal">06</span>
-                    <span className="h-px w-8 bg-line-strong" aria-hidden />
-                    Certifications
-                  </p>
+                  <p className="eyebrow mb-4">06 · Certifications</p>
                 </Reveal>
                 <Stagger as="ul" className="border-t border-line">
                   {certifications.map((item) => (
-                    <StaggerItem as="li" key={item.id} className="border-b border-line py-7">
-                      <p className="label mb-3">{[item.issuer, item.year].filter(Boolean).join(" · ")}</p>
+                    <StaggerItem as="li" key={item.id} className="border-b border-line py-5">
+                      <p className="label mb-2">{[item.issuer, item.year].filter(Boolean).join(" · ")}</p>
                       <h3 className="title">
                         {item.url ? (
                           <a href={item.url} target="_blank" rel="noopener noreferrer" className="link-line">

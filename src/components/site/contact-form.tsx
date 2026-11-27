@@ -63,14 +63,14 @@ export function ContactForm() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex min-h-[26rem] flex-col items-start justify-center rounded-2xl border border-line bg-surface/60 p-8 md:p-12"
+            className="panel flex min-h-[22rem] flex-col items-start justify-center p-7 md:p-10"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-signal text-background">
+            <span className="flex size-11 items-center justify-center bg-signal text-background">
               <Check className="size-5" aria-hidden />
             </span>
-            <h2 className="headline mt-8 !text-[clamp(1.75rem,3vw,2.75rem)]">Message sent.</h2>
+            <h2 className="headline mt-6">Message sent.</h2>
             <p className="lede mt-4">Thank you for reaching out. I will reply as soon as I can.</p>
-            <button type="button" className="btn btn-ghost mt-10" onClick={() => setStatus("idle")}>
+            <button type="button" className="btn mt-8" onClick={() => setStatus("idle")}>
               Send another message
             </button>
           </motion.div>
@@ -82,9 +82,9 @@ export function ContactForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            <div className="grid gap-8 sm:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2">
               <Field label="Name" error={errors.name?.message} id="contact-name">
                 <input
                   id="contact-name"
@@ -166,7 +166,7 @@ export function ContactForm() {
 }
 
 const inputClass =
-  "w-full border-0 border-b border-line-strong bg-transparent px-0 py-2 text-lg text-ink placeholder:text-ink-faint transition-colors focus:border-signal focus:outline-none focus:ring-0 aria-[invalid=true]:border-destructive";
+  "w-full border border-line-strong bg-base px-3 py-2.5 text-[1.05rem] text-ink placeholder:text-ink-faint transition-colors focus:border-signal focus:outline-none focus:ring-0 aria-[invalid=true]:border-destructive";
 
 function Field({
   id,
@@ -183,7 +183,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="label mb-3 flex items-center justify-between">
+      <label htmlFor={id} className="label mb-2 flex items-center justify-between !text-ink-dim">
         {label}
         {optional ? <span className="normal-case tracking-normal">Optional</span> : null}
       </label>

@@ -1,10 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { Magnetic } from "@/components/motion/magnetic";
-import { Parallax } from "@/components/motion/parallax";
-import { Reveal, RevealText, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 import { Spotlight } from "@/components/motion/spotlight";
-import { AmbientCanvas } from "@/components/site/ambient-canvas";
 import { PrinciplesRail } from "@/components/site/principles-rail";
 import { ProjectCard } from "@/components/site/project-card";
 import { SectionHeading } from "@/components/site/section-heading";
@@ -14,51 +11,36 @@ import { formatRange, pad2 } from "@/lib/utils";
 
 type SectionProps = { config: HomeSection; index: string };
 
-/** Technology marquee, two rows drifting in opposite directions. */
-export function StackMarquee({ categories }: { categories: SkillCategory[] }) {
+/** Technology marquee: one slow row of uppercase names, each marked with an accent square. */
+export function StackMarquee({ categories, eyebrow }: { categories: SkillCategory[]; eyebrow?: string }) {
   const names = categories.flatMap((c) => c.skills.map((s) => s.name));
   if (names.length === 0) return null;
-  const rows = [names, [...names].reverse()];
 
   return (
-    <section aria-label="Technologies" className="border-y border-line py-6 md:py-8">
+    <section aria-label="Technologies" className="overflow-hidden border-b border-line pb-8 pt-9">
+      <p className="label mb-4 text-center !text-[0.66rem] !tracking-[0.18em]">{eyebrow || "Tools I work with"}</p>
       {/* Accessible, non-duplicated list for assistive tech */}
       <ul className="sr-only">
         {names.map((name) => (
           <li key={name}>{name}</li>
         ))}
       </ul>
-      <div aria-hidden className="space-y-4">
-        {rows.map((row, r) => (
-          <div key={r} className="marquee overflow-hidden">
-            <div
-              className="marquee-track"
-              style={{
-                ["--marquee-duration" as string]: `${Math.max(30, row.length * 4)}s`,
-                animationDirection: r === 1 ? "reverse" : "normal",
-              }}
-            >
-              {[0, 1].map((copy) => (
-                <div key={copy} className="flex shrink-0 items-center">
-                  {row.map((name, i) => (
-                    <span key={name + i} className="flex items-center">
-                      <span
-                        className={
-                          r === 0
-                            ? "px-6 text-3xl font-medium tracking-tight md:text-5xl"
-                            : "px-6 font-serif text-3xl italic text-ink-dim md:text-5xl"
-                        }
-                      >
-                        {name}
-                      </span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-signal" />
-                    </span>
-                  ))}
-                </div>
+      <div aria-hidden className="marquee overflow-hidden">
+        <div className="marquee-track" style={{ ["--marquee-duration" as string]: `${Math.max(30, names.length * 3.5)}s` }}>
+          {[0, 1].map((copy) => (
+            <div key={copy} className="flex shrink-0 items-center gap-11 pr-11">
+              {names.map((name, i) => (
+                <span
+                  key={name + i}
+                  className="inline-flex items-center gap-2.5 whitespace-nowrap font-display text-[1.15rem] font-semibold uppercase tracking-[-0.02em] text-ink-dim"
+                >
+                  <span className="size-[7px] border border-signal" />
+                  {name}
+                </span>
               ))}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -67,7 +49,7 @@ export function StackMarquee({ categories }: { categories: SkillCategory[] }) {
 export function FeaturedWork({ config, index, projects }: SectionProps & { projects: Project[] }) {
   if (projects.length === 0) return null;
   return (
-    <section id="work" data-section="Work" className="section">
+    <section id="work" data-section="Work" className="section border-b border-line">
       <div className="shell">
         <SectionHeading
           index={index}
@@ -77,7 +59,7 @@ export function FeaturedWork({ config, index, projects }: SectionProps & { proje
           ctaLabel={config.cta_label}
           ctaHref={config.cta_href}
         />
-        <Stagger className="mt-16 grid gap-5 md:mt-24 md:grid-cols-2 md:gap-6" stagger={0.12}>
+        <Stagger className="mt-8 grid gap-4 md:mt-10 md:grid-cols-2" stagger={0.08}>
           {projects.map((project, i) => (
             <StaggerItem key={project.id} className={i === 0 ? "md:col-span-2" : undefined}>
               <ProjectCard project={project} index={i} wide={i === 0} priority={i === 0} className="h-full" />
@@ -92,12 +74,12 @@ export function FeaturedWork({ config, index, projects }: SectionProps & { proje
 export function Principles({ config, index, items }: SectionProps & { items: TextBlock[] }) {
   if (items.length === 0) return null;
   return (
-    <section id="principles" data-section="Principles" className="border-y border-line bg-surface/30 pt-24 md:pt-32 lg:pt-0">
-      <div className="shell pb-12 lg:pb-0 lg:pt-32">
+    <section id="principles" data-section="Principles" className="border-b border-line pt-10 md:pt-14 lg:pt-0">
+      <div className="shell pb-8 lg:pb-0 lg:pt-14">
         <SectionHeading index={index} eyebrow={config.eyebrow} heading={config.heading} body={config.body} />
       </div>
       <PrinciplesRail items={items} />
-      <div className="h-20 lg:h-0" />
+      <div className="h-10 lg:h-0" />
     </section>
   );
 }
@@ -105,7 +87,7 @@ export function Principles({ config, index, items }: SectionProps & { items: Tex
 export function Capabilities({ config, index, categories }: SectionProps & { categories: SkillCategory[] }) {
   if (categories.length === 0) return null;
   return (
-    <section id="capabilities" data-section="Capabilities" className="section">
+    <section id="capabilities" data-section="Capabilities" className="section border-b border-line">
       <div className="shell">
         <SectionHeading
           index={index}
@@ -115,25 +97,25 @@ export function Capabilities({ config, index, categories }: SectionProps & { cat
           ctaLabel={config.cta_label}
           ctaHref={config.cta_href}
         />
-        <Stagger className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:mt-24 md:grid-cols-2 xl:grid-cols-4">
+        <Stagger className="mt-8 grid gap-3.5 md:mt-10 md:grid-cols-2 xl:grid-cols-4">
           {categories.map((category, i) => (
-            <StaggerItem key={category.id} className="bg-base">
-              <Spotlight className="flex h-full flex-col p-7 md:p-8">
-                <p className="label mb-10 flex items-center justify-between">
-                  <span>{pad2(i + 1)}</span>
+            <StaggerItem key={category.id} className="h-full">
+              <Spotlight className="flex h-full flex-col border border-line bg-surface p-5 transition-colors hover:border-signal">
+                <p className="label mb-6 flex items-center justify-between">
+                  <span className="text-signal">{pad2(i + 1)}</span>
                   <span>{category.skills.length} tools</span>
                 </p>
                 <h3 className="title">{category.name}</h3>
                 {category.description ? (
-                  <p className="mt-3 text-sm leading-relaxed text-ink-dim">{category.description}</p>
+                  <p className="mt-2 text-[0.95rem] leading-[1.45] text-ink-dim">{category.description}</p>
                 ) : null}
-                <ul className="mt-10 space-y-px">
+                <ul className="mt-6">
                   {category.skills.map((skill) => {
                     const Icon = getSkillIcon(skill.icon);
                     return (
                       <li
                         key={skill.id}
-                        className="group/skill flex items-center gap-3 border-t border-line py-3 text-[0.9375rem] transition-colors hover:text-signal"
+                        className="group/skill flex items-center gap-3 border-t border-line py-2.5 font-mono text-[0.8rem] transition-colors hover:text-signal"
                       >
                         <Icon aria-hidden className="size-4 text-ink-faint transition-colors group-hover/skill:text-signal" />
                         {skill.name}
@@ -157,12 +139,12 @@ export function ExperienceList({ items }: { items: Experience[] }) {
         <StaggerItem
           as="li"
           key={item.id}
-          className="group grid gap-4 border-b border-line py-8 transition-colors hover:bg-surface/40 md:grid-cols-12 md:gap-6 md:py-10"
+          className="group grid gap-3 border-b border-line py-7 transition-colors hover:bg-[var(--signal-tint)] md:grid-cols-12 md:gap-6 md:px-3"
         >
-          <p className="label pt-1.5 md:col-span-3">{formatRange(item.start_date, item.end_date)}</p>
+          <p className="label pt-1 !text-signal md:col-span-3">{formatRange(item.start_date, item.end_date)}</p>
           <div className="md:col-span-4">
             <h3 className="title">{item.role}</h3>
-            <p className="mt-2 text-ink-dim">
+            <p className="mt-1.5 text-ink-dim">
               {item.company_url ? (
                 <a href={item.company_url} target="_blank" rel="noopener noreferrer" className="link-line">
                   {item.company}
@@ -174,12 +156,12 @@ export function ExperienceList({ items }: { items: Experience[] }) {
             </p>
           </div>
           <div className="md:col-span-5">
-            {item.summary ? <p className="leading-relaxed text-ink-dim">{item.summary}</p> : null}
+            {item.summary ? <p className="leading-[1.6]">{item.summary}</p> : null}
             {item.highlights.length > 0 ? (
-              <ul className="mt-4 space-y-2 text-[0.9375rem] text-ink-dim">
+              <ul className="mt-3 space-y-1.5 text-[1rem] leading-[1.5] text-ink-dim">
                 {item.highlights.map((highlight, i) => (
                   <li key={i} className="relative pl-5">
-                    <span aria-hidden className="absolute left-0 top-[0.7em] h-px w-2.5 bg-signal" />
+                    <span aria-hidden className="absolute left-0.5 top-[0.6em] size-[7px] border border-signal" />
                     {highlight}
                   </li>
                 ))}
@@ -204,7 +186,7 @@ export function ExperienceList({ items }: { items: Experience[] }) {
 export function ExperienceSection({ config, index, items }: SectionProps & { items: Experience[] }) {
   if (items.length === 0) return null;
   return (
-    <section id="experience" data-section="Experience" className="section">
+    <section id="experience" data-section="Experience" className="section border-b border-line">
       <div className="shell">
         <SectionHeading
           index={index}
@@ -214,7 +196,7 @@ export function ExperienceSection({ config, index, items }: SectionProps & { ite
           ctaLabel={config.cta_label}
           ctaHref={config.cta_href}
         />
-        <div className="mt-16 md:mt-24">
+        <div className="mt-8 md:mt-10">
           <ExperienceList items={items} />
         </div>
       </div>
@@ -224,44 +206,46 @@ export function ExperienceSection({ config, index, items }: SectionProps & { ite
 
 export function ContactCta({ config, index, profile }: SectionProps & { profile: Profile }) {
   return (
-    <section id="contact" data-section="Contact" className="relative overflow-hidden border-t border-line">
-      <Parallax className="pointer-events-none absolute inset-0 opacity-70" amount={120}>
-        <AmbientCanvas seed={23} />
-      </Parallax>
-      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,var(--base)_75%)]" />
-
-      <div className="shell section relative flex flex-col items-center text-center">
-        <Reveal>
-          <p className="label mb-8 flex items-center gap-3">
-            <span className="text-signal">{index}</span>
-            <span className="h-px w-8 bg-line-strong" aria-hidden />
-            {config.eyebrow}
-          </p>
-        </Reveal>
-        <RevealText text={config.heading} className="display max-w-[18ch] !text-[clamp(2.5rem,7vw,7rem)]" />
-        {config.body ? (
-          <Reveal delay={0.15}>
-            <p className="lede mx-auto mt-8">{config.body}</p>
-          </Reveal>
-        ) : null}
-        <Reveal delay={0.25} className="mt-12 flex flex-wrap justify-center gap-3">
-          {config.cta_label && config.cta_href ? (
-            <Magnetic>
+    <section id="contact" data-section="Contact" className="section">
+      <div className="shell">
+        <Reveal y={8} className="panel grid gap-6 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-10 md:p-9">
+          <div>
+            <p className="eyebrow">
+              {index} · {config.eyebrow}
+            </p>
+            <h2 className="headline mt-3 max-w-[24ch]">
+              <AccentText text={config.heading} />
+            </h2>
+            {config.body ? <p className="mt-4 max-w-[60ch] text-[1.05rem] leading-[1.6]">{config.body}</p> : null}
+          </div>
+          <div className="flex flex-col gap-2.5 sm:flex-row md:flex-col">
+            {config.cta_label && config.cta_href ? (
               <Link href={config.cta_href} className="btn btn-primary">
                 {config.cta_label}
                 <ArrowUpRight className="arrow size-4" aria-hidden />
               </Link>
-            </Magnetic>
-          ) : null}
-          {profile.email ? (
-            <Magnetic>
-              <a href={`mailto:${profile.email}`} className="btn btn-ghost">
+            ) : null}
+            {profile.email ? (
+              <a href={`mailto:${profile.email}`} className="btn">
                 {profile.email}
               </a>
-            </Magnetic>
-          ) : null}
+            ) : null}
+          </div>
         </Reveal>
       </div>
     </section>
+  );
+}
+
+/** Renders *accent* words in the accent colour without the word-by-word animation. */
+function AccentText({ text }: { text: string }) {
+  return text.split(/(\*[^*]+\*)/).map((part, i) =>
+    part.startsWith("*") && part.endsWith("*") ? (
+      <span key={i} className="accent-serif">
+        {part.slice(1, -1)}
+      </span>
+    ) : (
+      part
+    ),
   );
 }

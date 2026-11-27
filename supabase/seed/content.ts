@@ -76,7 +76,7 @@ export const seedSettings: SiteSettings = {
   },
   hero_media_url: null,
   hero_media_type: null,
-  accent: "#FF6A3D",
+  accent: "#EC4D36",
   accent_alt: "#8B9CFF",
   home_sections: [
     { key: "stack", visible: true, eyebrow: "Stack", heading: "", body: "", cta_label: "", cta_href: "" },

@@ -8,7 +8,6 @@ import {
   Principles,
   StackMarquee,
 } from "@/components/site/home/sections";
-import { SectionIndicator, type IndicatorSection } from "@/components/site/section-indicator";
 import {
   getExperience,
   getProfile,
@@ -34,7 +33,7 @@ export default async function HomePage() {
   // Sections render in the order and visibility chosen in Admin → Settings.
   let counter = 0;
   const render = (config: HomeSection): ReactNode => {
-    if (config.key === "stack") return <StackMarquee key={config.key} categories={categories} />;
+    if (config.key === "stack") return <StackMarquee key={config.key} categories={categories} eyebrow={config.eyebrow} />;
     const index = pad2(++counter);
     switch (config.key) {
       case "featured":
@@ -50,33 +49,10 @@ export default async function HomePage() {
     }
   };
 
-  // Side-rail entries: only sections that are switched on and have content.
-  const hasContent: Record<string, boolean> = {
-    featured: showcase.length > 0,
-    principles: profile.philosophy.length > 0,
-    capabilities: categories.length > 0,
-    experience: experience.length > 0,
-    contact: true,
-  };
-  const anchors: Record<string, IndicatorSection> = {
-    featured: { id: "work", label: "Work" },
-    principles: { id: "principles", label: "Principles" },
-    capabilities: { id: "capabilities", label: "Capabilities" },
-    experience: { id: "experience", label: "Experience" },
-    contact: { id: "contact", label: "Contact" },
-  };
-  const indicator: IndicatorSection[] = [
-    { id: "top", label: "Intro" },
-    ...settings.home_sections
-      .filter((section) => section.visible && hasContent[section.key])
-      .map((section) => anchors[section.key]),
-  ];
-
   return (
     <>
       <Hero profile={profile} settings={settings} />
       {settings.home_sections.filter((section) => section.visible).map(render)}
-      <SectionIndicator sections={indicator} />
     </>
   );
 }

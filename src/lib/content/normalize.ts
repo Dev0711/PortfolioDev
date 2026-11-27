@@ -50,7 +50,7 @@ export const emptySettings: SiteSettings = {
   hero_cta: { primary_label: "", primary_href: "", secondary_label: "", secondary_href: "" },
   hero_media_url: null,
   hero_media_type: null,
-  accent: "#FF6A3D",
+  accent: "#EC4D36",
   accent_alt: "#8B9CFF",
   footer: { headline: "", note: "", links: [] },
   seo_title: "",
