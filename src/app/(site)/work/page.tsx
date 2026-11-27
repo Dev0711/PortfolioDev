@@ -20,9 +20,13 @@ export default async function WorkPage() {
         eyebrow="Work"
         heading={intro?.heading || "Selected work."}
         body={intro?.body}
-        seed={31}
+        stats={[
+          { label: "Projects", value: projects.length },
+          { label: "Areas", value: new Set(projects.map((p) => p.category).filter(Boolean)).size },
+          { label: "Technologies", value: new Set(projects.flatMap((p) => p.technologies)).size },
+        ]}
       />
-      <section className="shell py-14 md:py-20" aria-label="Projects">
+      <section className="shell py-10 md:py-12" aria-label="Projects">
         {projects.length > 0 ? (
           <ProjectExplorer projects={projects} />
         ) : (

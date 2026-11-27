@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProjectDetail } from "@/components/site/project-detail";
-import { getProjectBySlug, getProjects } from "@/lib/content/queries";
+import { getProfile, getProjectBySlug, getProjects } from "@/lib/content/queries";
 import { env } from "@/lib/env";
 
 type Props = PageProps<"/work/[slug]">;
@@ -34,11 +34,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function ProjectContent({ params }: Pick<Props, "params">) {
   const { slug } = await params;
-  const [project, projects] = await Promise.all([getProjectBySlug(slug), getProjects()]);
+  const [project, projects, profile] = await Promise.all([getProjectBySlug(slug), getProjects(), getProfile()]);
   if (!project) notFound();
 
   const position = projects.findIndex((item) => item.id === project.id);
   const next = projects.length > 1 ? projects[(position + 1) % projects.length] : null;
+  const previous = projects.length > 2 ? projects[(position - 1 + projects.length) % projects.length] : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -56,7 +57,7 @@ async function ProjectContent({ params }: Pick<Props, "params">) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <ProjectDetail project={project} next={next} />
+      <ProjectDetail project={project} next={next} previous={previous} author={profile} />
     </>
   );
 }

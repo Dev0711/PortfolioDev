@@ -1,13 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { Search, X } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
 import { ProjectCard } from "@/components/site/project-card";
 import type { Project } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** Filterable, searchable project grid for /work. */
 export function ProjectExplorer({ projects }: { projects: Project[] }) {
@@ -37,8 +34,8 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-5 border-y border-line py-5 md:flex-row md:items-center md:justify-between">
-        <div role="group" aria-label="Filter by category" className="-mx-1 flex flex-wrap gap-1">
+      <div className="iv-controls">
+        <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-1.5">
           {categories.map((item) => {
             const active = item.name === category;
             return (
@@ -48,42 +45,33 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
                 aria-pressed={active}
                 onClick={() => setCategory(item.name)}
                 className={cn(
-                  "relative rounded-full px-4 py-2 text-sm transition-colors duration-300",
-                  active ? "text-background" : "text-ink-dim hover:text-ink",
+                  "min-h-9 border px-3 py-1.5 font-mono text-[0.74rem] uppercase tracking-[0.06em] transition-colors",
+                  active
+                    ? "border-signal bg-signal text-background"
+                    : "border-line bg-surface text-ink-dim hover:border-signal hover:text-signal",
                 )}
               >
-                {active ? (
-                  <motion.span
-                    layoutId="category-pill"
-                    className="absolute inset-0 rounded-full bg-ink"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                ) : null}
-                <span className="relative">
-                  {item.name}
-                  <sup className="ml-1 font-mono text-[0.625rem] opacity-70">{item.count}</sup>
-                </span>
+                {item.name} <span className="opacity-70">{item.count}</span>
               </button>
             );
           })}
         </div>
-
-        <label className="relative flex items-center md:w-72">
+        <label className="iv-search relative flex items-center">
           <span className="sr-only">Search projects</span>
-          <Search aria-hidden className="pointer-events-none absolute left-0 size-4 text-ink-faint" />
+          <Search aria-hidden className="pointer-events-none absolute left-2.5 size-3.5 text-ink-faint" />
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name or technology"
-            className="h-10 w-full border-b border-line-strong bg-transparent pl-7 pr-8 text-sm text-ink placeholder:text-ink-faint focus:border-signal focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="!pl-8 !pr-8 [&::-webkit-search-cancel-button]:hidden"
           />
           {query ? (
             <button
               type="button"
               aria-label="Clear search"
               onClick={() => setQuery("")}
-              className="absolute right-0 flex size-8 items-center justify-center text-ink-faint hover:text-ink"
+              className="absolute right-1 flex size-8 items-center justify-center text-ink-faint hover:text-signal"
             >
               <X className="size-4" />
             </button>
@@ -91,34 +79,25 @@ export function ProjectExplorer({ projects }: { projects: Project[] }) {
         </label>
       </div>
 
-      <p className="label mt-6" role="status" aria-live="polite">
+      <p className="iv-count" role="status" aria-live="polite">
         {results.length} {results.length === 1 ? "project" : "projects"}
+        {category !== "All" ? ` · ${category}` : ""}
       </p>
 
       {results.length > 0 ? (
-        <motion.ul layout className="mt-6 grid gap-5 md:grid-cols-2 md:gap-6">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {results.map((project, i) => (
-              <motion.li
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.5, ease: EASE }}
-              >
-                <ProjectCard project={project} index={i} className="h-full" priority={i < 2} />
-              </motion.li>
-            ))}
-          </AnimatePresence>
-        </motion.ul>
+        <ul className="machine-grid !mt-4">
+          {results.map((project, i) => (
+            <li key={project.id}>
+              <ProjectCard project={project} index={i} priority={i < 2} />
+            </li>
+          ))}
+        </ul>
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-line-strong px-6 py-20 text-center">
-          <p className="title">No projects match.</p>
-          <p className="mt-3 text-ink-dim">Try a different category or search term.</p>
+        <div className="mt-4 border border-dashed border-line-strong px-6 py-14 text-center">
+          <p className="iv-empty !p-0">No projects match.</p>
           <button
             type="button"
-            className="btn btn-ghost mt-8"
+            className="btn mt-5"
             onClick={() => {
               setCategory("All");
               setQuery("");

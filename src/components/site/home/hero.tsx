@@ -1,77 +1,144 @@
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { Magnetic } from "@/components/motion/magnetic";
-import { Reveal, RevealText } from "@/components/motion/reveal";
+import { AccentText } from "@/components/site/accent-text";
+import { CopyChip } from "@/components/site/copy-chip";
 import { LocalClock } from "@/components/site/local-clock";
-import { MediaBackdrop } from "@/components/site/media-backdrop";
-import type { Profile, SiteSettings } from "@/lib/types";
+import { BackgroundVideo } from "@/components/site/media-backdrop";
+import { plainHeadline } from "@/lib/content/text";
+import type { Profile, Project, SiteSettings, SkillCategory } from "@/lib/types";
+import { cn, isExternal, pad2 } from "@/lib/utils";
 
-export function Hero({ profile, settings }: { profile: Profile; settings: SiteSettings }) {
+/**
+ * Masthead in the reference layout: pixel title, serif tagline, italic
+ * attribution, square buttons, a "Start here" box of featured projects and a
+ * terminal-style contact box with a copy button.
+ */
+export function Hero({
+  profile,
+  settings,
+  projects,
+  categories,
+}: {
+  profile: Profile;
+  settings: SiteSettings;
+  projects: Project[];
+  categories: SkillCategory[];
+}) {
   const cta = settings.hero_cta;
+  const long = plainHeadline(profile.hero_headline).length > 34;
+  const start = projects.slice(0, 4);
+  const tools = categories.flatMap((c) => c.skills.map((s) => s.name)).slice(0, 4);
+  const attribution = [profile.availability, profile.location ? `Based in ${profile.location}` : ""].filter(Boolean);
 
   return (
-    <section
-      id="top"
-      data-section="Intro"
-      className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pb-10 pt-32 md:pb-14"
-    >
-      <MediaBackdrop url={settings.hero_media_url} type={settings.hero_media_type} priority />
+    <section id="top" data-section="Intro" className="border-b border-line">
+      <div className="masthead shell border-b-0">
+        <h1 className={cn("masthead-title", long && "!text-[clamp(2.2rem,5.4vw,3.9rem)]")}>
+          <AccentText text={profile.hero_headline} />
+          <span className="cursor" aria-hidden />
+        </h1>
 
-      <div className="shell relative">
-        <Reveal className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3 md:mb-12" y={12}>
-          {profile.availability ? (
-            <p className="chip !h-8 !border-line-strong bg-base/50 !text-ink backdrop-blur">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inset-0 rounded-full bg-signal [animation:pulse-dot_2.4s_ease-in-out_infinite]" />
-              </span>
-              {profile.availability}
-            </p>
+        {profile.hero_description ? <p className="masthead-tagline">{profile.hero_description}</p> : null}
+        {attribution.length > 0 ? (
+          <p className="masthead-attribution">
+            {attribution.join(". ")}
+            {profile.timezone ? (
+              <>
+                . Local time <LocalClock timezone={profile.timezone} />.
+              </>
+            ) : null}
+          </p>
+        ) : null}
+
+        <div className="masthead-cta">
+          {cta.primary_label && cta.primary_href ? (
+            <Link href={cta.primary_href} className="btn btn-primary">
+              {cta.primary_label}
+            </Link>
           ) : null}
-          <p className="label">{profile.title}</p>
-        </Reveal>
-
-        <RevealText as="h1" immediate delay={0.15} text={profile.hero_headline} className="display max-w-[16ch]" />
-
-        <div className="mt-10 grid gap-10 md:mt-14 md:grid-cols-12 md:items-end">
-          <Reveal delay={0.5} className="md:col-span-6 lg:col-span-5">
-            <p className="lede">{profile.hero_description}</p>
-          </Reveal>
-
-          <Reveal delay={0.6} className="flex flex-wrap gap-3 md:col-span-6 md:justify-end lg:col-span-7">
-            {cta.primary_label && cta.primary_href ? (
-              <Magnetic>
-                <Link href={cta.primary_href} className="btn btn-primary">
-                  {cta.primary_label}
-                  <ArrowUpRight className="arrow size-4" aria-hidden />
-                </Link>
-              </Magnetic>
-            ) : null}
-            {cta.secondary_label && cta.secondary_href ? (
-              <Magnetic>
-                <Link href={cta.secondary_href} className="btn btn-ghost">
-                  {cta.secondary_label}
-                </Link>
-              </Magnetic>
-            ) : null}
-          </Reveal>
+          {cta.secondary_label && cta.secondary_href ? (
+            <Link href={cta.secondary_href} className="btn">
+              {cta.secondary_label}
+            </Link>
+          ) : null}
+          {profile.socials.slice(0, 3).map((social) => (
+            <a
+              key={social.url}
+              href={social.url}
+              className="btn btn--quiet"
+              {...(isExternal(social.url) ? { target: "_blank", rel: "noopener noreferrer me" } : {})}
+            >
+              {social.label} ↗
+            </a>
+          ))}
         </div>
 
-        <Reveal
-          delay={0.8}
-          y={0}
-          className="label mt-14 flex items-center justify-between border-t border-line pt-5 md:mt-20"
-        >
-          <span className="flex items-center gap-2">
-            <ArrowDown className="size-3 animate-bounce" aria-hidden />
-            Scroll
-          </span>
-          <span className="hidden sm:inline">{profile.name}</span>
-          <span>
-            {profile.location ? `${profile.location} · ` : ""}
-            <LocalClock timezone={profile.timezone} />
-          </span>
-        </Reveal>
+        {start.length > 0 ? (
+          <nav className="start-box" aria-labelledby="start-title">
+            <p className="start-box-title" id="start-title">
+              Start here
+            </p>
+            <ul className="start-list">
+              {start.map((project, i) => (
+                <li key={project.id}>
+                  <Link className="start-row" href={`/work/${project.slug}`}>
+                    <span className="start-who">{project.category || "Project"}</span>
+                    <span className="start-lesson">
+                      <span className="start-phase">{pad2(i + 1)}</span>
+                      {project.title}
+                    </span>
+                    <span className="start-time">{project.timeframe ? `${project.timeframe} →` : "Read →"}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link className="start-more" href="/work">
+              Browse all projects →
+            </Link>
+          </nav>
+        ) : null}
+
+        {profile.email ? (
+          <div className="terminal">
+            <div className="terminal-bar">
+              <span>Get in touch</span>
+              <CopyChip value={profile.email} label="Copy email address" />
+            </div>
+            <pre>
+              <span>mailto:{profile.email}</span>
+              {"\n"}
+              <span className="p">&gt;</span>{" "}
+              <span className="b">{profile.availability || "Replies within a couple of days."}</span>
+            </pre>
+            {tools.length > 0 ? (
+              <div className="terminal-agents" aria-label="Main tools">
+                {tools.map((tool) => (
+                  <span key={tool}>{tool}</span>
+                ))}
+                <span>+ more below</span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {profile.email ? (
+          <p className="terminal-caption">
+            {profile.title ? `${profile.title}. ` : ""}
+            <Link href="/contact">Send a message →</Link>
+          </p>
+        ) : null}
       </div>
+
+      {settings.hero_media_url && settings.hero_media_type ? (
+        <div className="shell pb-11">
+          <figure className="relative aspect-[16/9] overflow-hidden border border-line bg-surface md:aspect-[21/9]">
+            {settings.hero_media_type === "video" ? (
+              <BackgroundVideo src={settings.hero_media_url} className="!opacity-100" />
+            ) : (
+              <Image src={settings.hero_media_url} alt="" fill priority sizes="100vw" className="object-cover" />
+            )}
+          </figure>
+        </div>
+      ) : null}
     </section>
   );
 }

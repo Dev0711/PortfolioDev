@@ -1,98 +1,79 @@
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { Magnetic } from "@/components/motion/magnetic";
-import { Reveal, RevealText } from "@/components/motion/reveal";
+import { AccentText } from "@/components/site/accent-text";
+import { CopyChip } from "@/components/site/copy-chip";
 import { CurrentYear, LocalClock } from "@/components/site/local-clock";
 import type { Profile, SiteSettings } from "@/lib/types";
 import { isExternal } from "@/lib/utils";
 
+/** Reference colophon (label + text + copyable command) followed by the mono footer row. */
 export function Footer({ profile, settings }: { profile: Profile; settings: SiteSettings }) {
   const links = [...profile.socials, ...settings.footer.links];
-  const nav = settings.nav.filter((item) => item.visible);
+  const nav = [{ label: "Home", href: "/" }, ...settings.nav.filter((item) => item.visible)];
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-line">
-      <div className="shell pb-10 pt-20 md:pt-28">
-        <div className="grid gap-14 md:grid-cols-12">
-          <div className="md:col-span-8">
-            <p className="label mb-6">Contact</p>
+    <>
+      <section className="colophon mt-auto border-t border-line" aria-label="Colophon">
+        <div className="shell colophon-grid">
+          <div className="eyebrow">Colophon</div>
+          <div>
             {settings.footer.headline ? (
-              <RevealText as="p" text={settings.footer.headline} className="headline max-w-3xl" />
+              <p className="section-title !mt-0 !text-[clamp(1.3rem,2vw,1.7rem)] !leading-[1.1] text-ink">
+                <AccentText text={settings.footer.headline} />
+              </p>
             ) : null}
+            <p className="mt-3">
+              {settings.footer.note || "Built by hand with Next.js and Supabase."}{" "}
+              {profile.location ? `Based in ${profile.location}, ` : ""}
+              local time <LocalClock timezone={profile.timezone} />.
+            </p>
             {profile.email ? (
-              <Reveal delay={0.15} className="mt-10">
-                <Magnetic>
-                  <a href={`mailto:${profile.email}`} className="btn btn-primary" data-cursor="Email">
-                    {profile.email}
-                    <ArrowUpRight className="arrow size-4" aria-hidden />
-                  </a>
-                </Magnetic>
-              </Reveal>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-2 gap-10 md:col-span-4">
-            <nav aria-label="Footer">
-              <p className="label mb-5">Sitemap</p>
-              <ul className="space-y-3 text-sm">
-                <li>
-                  <Link href="/" className="link-line text-ink-dim hover:text-ink">
-                    Home
-                  </Link>
-                </li>
-                {nav.map((item) => (
-                  <li key={item.href + item.label}>
-                    <Link href={item.href} className="link-line text-ink-dim hover:text-ink">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            {links.length > 0 ? (
-              <div>
-                <p className="label mb-5">Elsewhere</p>
-                <ul className="space-y-3 text-sm">
-                  {links.map((link) => (
-                    <li key={link.url + link.label}>
-                      <a
-                        href={link.url}
-                        className="link-line text-ink-dim hover:text-ink"
-                        {...(isExternal(link.url) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                  {profile.resume_url ? (
-                    <li>
-                      <a
-                        href={profile.resume_url}
-                        className="link-line text-ink-dim hover:text-ink"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Résumé
-                      </a>
-                    </li>
-                  ) : null}
-                </ul>
+              <div className="colophon-cmd">
+                <code>
+                  <span className="text-ink-faint">$ </span>mail {profile.email}
+                </code>
+                <CopyChip value={profile.email} label="Copy email address" />
               </div>
             ) : null}
           </div>
         </div>
+      </section>
 
-        <div className="label mt-20 flex flex-col gap-3 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
-          <p>
-            © <CurrentYear /> {profile.name}
-          </p>
-          {settings.footer.note ? <p className="normal-case tracking-normal">{settings.footer.note}</p> : null}
-          <p>
-            {profile.location ? `${profile.location} · ` : ""}
-            <LocalClock timezone={profile.timezone} />
-          </p>
+      <footer className="site-footer">
+        <div className="shell footer-inner">
+          <div className="footer-left">
+            <p>
+              © <CurrentYear /> · {profile.name}
+              {profile.title ? ` · ${profile.title}` : ""}
+            </p>
+            {links.length > 0 || profile.resume_url ? (
+              <div className="footer-socials" aria-label="Profiles">
+                {links.map((link) => (
+                  <a
+                    key={link.url + link.label}
+                    href={link.url}
+                    className="social-link"
+                    {...(isExternal(link.url) ? { target: "_blank", rel: "noopener noreferrer me" } : {})}
+                  >
+                    <span className="social-handle">{link.label}</span>
+                  </a>
+                ))}
+                {profile.resume_url ? (
+                  <a href={profile.resume_url} className="social-link" target="_blank" rel="noopener noreferrer">
+                    <span className="social-handle">Résumé</span>
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <nav className="footer-links" aria-label="Footer">
+            {nav.map((item) => (
+              <Link key={item.href + item.label} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
