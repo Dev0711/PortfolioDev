@@ -1,25 +1,75 @@
-import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
-import { Spotlight } from "@/components/motion/spotlight";
-import { PrinciplesRail } from "@/components/site/principles-rail";
+import { Reveal } from "@/components/motion/reveal";
+import { AccentText } from "@/components/site/accent-text";
 import { ProjectCard } from "@/components/site/project-card";
-import { SectionHeading } from "@/components/site/section-heading";
-import { getSkillIcon } from "@/lib/icons";
 import type { Experience, HomeSection, Profile, Project, SkillCategory, TextBlock } from "@/lib/types";
-import { formatRange, pad2 } from "@/lib/utils";
+import { formatRange, isExternal, pad2 } from "@/lib/utils";
 
 type SectionProps = { config: HomeSection; index: string };
 
-/** Technology marquee: one slow row of uppercase names, each marked with an accent square. */
-export function StackMarquee({ categories, eyebrow }: { categories: SkillCategory[]; eyebrow?: string }) {
+/** Reference section header: accent eyebrow + pixel title on the left, lede on the right. */
+export function SectionHead({
+  index,
+  eyebrow,
+  heading,
+  body,
+  ctaLabel,
+  ctaHref,
+  id,
+}: {
+  index?: string;
+  eyebrow?: string;
+  heading?: string;
+  body?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  id?: string;
+}) {
+  return (
+    <div className="section-head">
+      <div>
+        {eyebrow ? (
+          <p className="eyebrow">
+            {index ? `${index} · ` : ""}
+            {eyebrow}
+          </p>
+        ) : null}
+        {heading ? (
+          <h2 className="section-title" id={id}>
+            <AccentText text={heading} />
+          </h2>
+        ) : null}
+      </div>
+      {body || (ctaLabel && ctaHref) ? (
+        <div>
+          {body ? <p className="section-lede">{body}</p> : null}
+          {ctaLabel && ctaHref ? (
+            <p className="section-foot !mt-3">
+              <Link href={ctaHref}>{ctaLabel} →</Link>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** "Built with" strip: one row of uppercase names plus a quoted principle. */
+export function StackMarquee({
+  categories,
+  eyebrow,
+  quote,
+}: {
+  categories: SkillCategory[];
+  eyebrow?: string;
+  quote?: string;
+}) {
   const names = categories.flatMap((c) => c.skills.map((s) => s.name));
   if (names.length === 0) return null;
 
   return (
-    <section aria-label="Technologies" className="overflow-hidden border-b border-line pb-8 pt-9">
-      <p className="label mb-4 text-center !text-[0.66rem] !tracking-[0.18em]">{eyebrow || "Tools I work with"}</p>
-      {/* Accessible, non-duplicated list for assistive tech */}
+    <section className="stack-strip" aria-label="Technologies">
+      <div className="stack-eyebrow">{eyebrow || "Tools I work with"}</div>
       <ul className="sr-only">
         {names.map((name) => (
           <li key={name}>{name}</li>
@@ -28,13 +78,9 @@ export function StackMarquee({ categories, eyebrow }: { categories: SkillCategor
       <div aria-hidden className="marquee overflow-hidden">
         <div className="marquee-track" style={{ ["--marquee-duration" as string]: `${Math.max(30, names.length * 3.5)}s` }}>
           {[0, 1].map((copy) => (
-            <div key={copy} className="flex shrink-0 items-center gap-11 pr-11">
+            <div key={copy} className="marquee-half">
               {names.map((name, i) => (
-                <span
-                  key={name + i}
-                  className="inline-flex items-center gap-2.5 whitespace-nowrap font-display text-[1.15rem] font-semibold uppercase tracking-[-0.02em] text-ink-dim"
-                >
-                  <span className="size-[7px] border border-signal" />
+                <span key={name + i} className="marquee-item">
                   {name}
                 </span>
               ))}
@@ -42,6 +88,11 @@ export function StackMarquee({ categories, eyebrow }: { categories: SkillCategor
           ))}
         </div>
       </div>
+      {quote ? (
+        <p className="stack-quote">
+          &ldquo;{quote}&rdquo; <span>· principle №1</span>
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -49,9 +100,9 @@ export function StackMarquee({ categories, eyebrow }: { categories: SkillCategor
 export function FeaturedWork({ config, index, projects }: SectionProps & { projects: Project[] }) {
   if (projects.length === 0) return null;
   return (
-    <section id="work" data-section="Work" className="section border-b border-line">
+    <section id="work" data-section="Work" className="bp-section">
       <div className="shell">
-        <SectionHeading
+        <SectionHead
           index={index}
           eyebrow={config.eyebrow}
           heading={config.heading}
@@ -59,94 +110,140 @@ export function FeaturedWork({ config, index, projects }: SectionProps & { proje
           ctaLabel={config.cta_label}
           ctaHref={config.cta_href}
         />
-        <Stagger className="mt-8 grid gap-4 md:mt-10 md:grid-cols-2" stagger={0.08}>
+        <div className="machine-grid">
           {projects.map((project, i) => (
-            <StaggerItem key={project.id} className={i === 0 ? "md:col-span-2" : undefined}>
-              <ProjectCard project={project} index={i} wide={i === 0} priority={i === 0} className="h-full" />
-            </StaggerItem>
+            <Reveal key={project.id} y={8} delay={i * 0.04} className="h-full">
+              <ProjectCard project={project} index={i} priority={i === 0} />
+            </Reveal>
           ))}
-        </Stagger>
+        </div>
       </div>
     </section>
+  );
+}
+
+/** Numbered step cards (reference "your agent is the tutor" steps). */
+export function StepCards({ items }: { items: TextBlock[] }) {
+  return (
+    <ol className="steps">
+      {items.map((item, i) => (
+        <li key={item.title + i} className="step">
+          <span className="step-num">{pad2(i + 1)}</span>
+          <h3 className="step-title">{item.title}</h3>
+          {item.body ? <p className="step-text">{item.body}</p> : null}
+        </li>
+      ))}
+    </ol>
   );
 }
 
 export function Principles({ config, index, items }: SectionProps & { items: TextBlock[] }) {
   if (items.length === 0) return null;
   return (
-    <section id="principles" data-section="Principles" className="border-b border-line pt-10 md:pt-14 lg:pt-0">
-      <div className="shell pb-8 lg:pb-0 lg:pt-14">
-        <SectionHeading index={index} eyebrow={config.eyebrow} heading={config.heading} body={config.body} />
+    <section id="principles" data-section="Principles" className="bp-section">
+      <div className="shell">
+        <SectionHead index={index} eyebrow={config.eyebrow} heading={config.heading} body={config.body} />
+        <StepCards items={items} />
       </div>
-      <PrinciplesRail items={items} />
-      <div className="h-10 lg:h-0" />
     </section>
   );
 }
 
+/** Skill areas drawn as the reference "learning paths" diagram: a root box joined to up to four nodes. */
 export function Capabilities({ config, index, categories }: SectionProps & { categories: SkillCategory[] }) {
   if (categories.length === 0) return null;
+  const tools = categories.reduce((sum, c) => sum + c.skills.length, 0);
+  const diagram = categories.length <= 4;
+  const ends: [number, number][] = [
+    [18, 16],
+    [82, 16],
+    [18, 84],
+    [82, 84],
+  ];
+
   return (
-    <section id="capabilities" data-section="Capabilities" className="section border-b border-line">
+    <section id="capabilities" data-section="Capabilities" className="bp-section">
       <div className="shell">
-        <SectionHeading
-          index={index}
-          eyebrow={config.eyebrow}
-          heading={config.heading}
-          body={config.body}
-          ctaLabel={config.cta_label}
-          ctaHref={config.cta_href}
-        />
-        <Stagger className="mt-8 grid gap-3.5 md:mt-10 md:grid-cols-2 xl:grid-cols-4">
-          {categories.map((category, i) => (
-            <StaggerItem key={category.id} className="h-full">
-              <Spotlight className="flex h-full flex-col border border-line bg-surface p-5 transition-colors hover:border-signal">
-                <p className="label mb-6 flex items-center justify-between">
-                  <span className="text-signal">{pad2(i + 1)}</span>
+        <div className="paths-header">
+          <div>
+            <p className="eyebrow mb-3">
+              {index} · {config.eyebrow}
+            </p>
+            <h2>
+              <AccentText text={config.heading} />
+            </h2>
+          </div>
+          <div>
+            {config.body ? <p>{config.body}</p> : null}
+            <div className="paths-links">
+              {config.cta_label && config.cta_href ? <Link href={config.cta_href}>{config.cta_label}</Link> : null}
+              <Link href="/work">See it in projects</Link>
+            </div>
+          </div>
+        </div>
+
+        {diagram ? (
+          <figure className="paths-figure">
+            <svg className="paths-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+              {categories.map((c, i) => (
+                <line key={c.id} x1="50" y1="50" x2={ends[i][0]} y2={ends[i][1]} />
+              ))}
+            </svg>
+            <div className="paths-root">
+              <strong>{config.eyebrow || "Toolkit"}</strong>
+              <span>
+                {tools} tools · {categories.length} areas
+              </span>
+            </div>
+            {categories.map((category, i) => (
+              <article key={category.id} className="path-node">
+                <span className="path-node-tag">Area {pad2(i + 1)}</span>
+                <span className="path-node-name">{category.name}</span>
+                {category.description ? <span className="path-node-desc">{category.description}</span> : null}
+                <span className="path-node-phases">{category.skills.map((s) => s.name).join(" · ")}</span>
+              </article>
+            ))}
+          </figure>
+        ) : (
+          <div className="phase-grid">
+            {categories.map((category, i) => (
+              <div key={category.id} className="phase-card">
+                <div className="phase-card-top">
+                  <span className="phase-card-num">Area {pad2(i + 1)}</span>
                   <span>{category.skills.length} tools</span>
-                </p>
-                <h3 className="title">{category.name}</h3>
-                {category.description ? (
-                  <p className="mt-2 text-[0.95rem] leading-[1.45] text-ink-dim">{category.description}</p>
-                ) : null}
-                <ul className="mt-6">
-                  {category.skills.map((skill) => {
-                    const Icon = getSkillIcon(skill.icon);
-                    return (
-                      <li
-                        key={skill.id}
-                        className="group/skill flex items-center gap-3 border-t border-line py-2.5 font-mono text-[0.8rem] transition-colors hover:text-signal"
-                      >
-                        <Icon aria-hidden className="size-4 text-ink-faint transition-colors group-hover/skill:text-signal" />
-                        {skill.name}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Spotlight>
-            </StaggerItem>
-          ))}
-        </Stagger>
+                </div>
+                <h3 className="phase-card-name">{category.name}</h3>
+                <p className="phase-card-desc">{category.description}</p>
+                <div className="phase-card-bar">
+                  <span style={{ width: `${Math.round((category.skills.length / Math.max(1, tools)) * 100)}%` }} />
+                </div>
+                <div className="phase-card-foot">
+                  <span>{category.skills.map((s) => s.name).slice(0, 3).join(" · ")}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
+/** Full experience list (About page): rows with dates, role, summary, highlights and tags. */
 export function ExperienceList({ items }: { items: Experience[] }) {
   return (
-    <Stagger as="ol" className="border-t border-line" stagger={0.1}>
-      {items.map((item) => (
-        <StaggerItem
-          as="li"
-          key={item.id}
-          className="group grid gap-3 border-b border-line py-7 transition-colors hover:bg-[var(--signal-tint)] md:grid-cols-12 md:gap-6 md:px-3"
-        >
-          <p className="label pt-1 !text-signal md:col-span-3">{formatRange(item.start_date, item.end_date)}</p>
+    <ol className="iv-list">
+      {items.map((item, i) => (
+        <li key={item.id} className="grid gap-x-6 gap-y-2 border-b border-line px-1 py-6 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="iv-row-num">{pad2(i + 1)}</p>
+            <p className="label mt-1">{formatRange(item.start_date, item.end_date)}</p>
+          </div>
           <div className="md:col-span-4">
-            <h3 className="title">{item.role}</h3>
+            <h3 className="pager-title !text-[1.15rem]">{item.role}</h3>
             <p className="mt-1.5 text-ink-dim">
               {item.company_url ? (
-                <a href={item.company_url} target="_blank" rel="noopener noreferrer" className="link-line">
+                <a href={item.company_url} target="_blank" rel="noopener noreferrer" className="text-signal">
                   {item.company}
                 </a>
               ) : (
@@ -158,94 +255,138 @@ export function ExperienceList({ items }: { items: Experience[] }) {
           <div className="md:col-span-5">
             {item.summary ? <p className="leading-[1.6]">{item.summary}</p> : null}
             {item.highlights.length > 0 ? (
-              <ul className="mt-3 space-y-1.5 text-[1rem] leading-[1.5] text-ink-dim">
-                {item.highlights.map((highlight, i) => (
-                  <li key={i} className="relative pl-5">
-                    <span aria-hidden className="absolute left-0.5 top-[0.6em] size-[7px] border border-signal" />
-                    {highlight}
-                  </li>
+              <ul className="mt-2 list-[square] space-y-1 pl-5 text-ink-dim marker:text-signal">
+                {item.highlights.map((highlight, h) => (
+                  <li key={h}>{highlight}</li>
                 ))}
               </ul>
             ) : null}
             {item.technologies.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap gap-2" aria-label="Technologies">
+              <ul className="iv-row-meta mt-3" aria-label="Technologies">
                 {item.technologies.map((tech) => (
-                  <li key={tech} className="chip">
+                  <li key={tech} className="iv-type">
                     {tech}
                   </li>
                 ))}
               </ul>
             ) : null}
           </div>
-        </StaggerItem>
+        </li>
       ))}
-    </Stagger>
+    </ol>
   );
 }
 
+/** Experience as the reference "how every lesson works" loop figure: up to four roles joined by arrows. */
 export function ExperienceSection({ config, index, items }: SectionProps & { items: Experience[] }) {
   if (items.length === 0) return null;
+  const steps = items.slice(0, 4);
   return (
-    <section id="experience" data-section="Experience" className="section border-b border-line">
+    <section id="experience" data-section="Experience" className="bp-section">
       <div className="shell">
-        <SectionHeading
-          index={index}
-          eyebrow={config.eyebrow}
-          heading={config.heading}
-          body={config.body}
-          ctaLabel={config.cta_label}
-          ctaHref={config.cta_href}
-        />
-        <div className="mt-8 md:mt-10">
-          <ExperienceList items={items} />
-        </div>
+        <SectionHead index={index} eyebrow={config.eyebrow} heading={config.heading} body={config.body} />
+        <figure className="loop-figure">
+          <ol className="loop-steps" style={{ ["--n" as string]: steps.length }}>
+            {steps.map((item) => (
+              <li key={item.id} className="loop-step">
+                <span className="loop-step-label">{formatRange(item.start_date, item.end_date)}</span>
+                <h3>{item.role}</h3>
+                <p>
+                  <strong className="font-semibold text-ink">{item.company}</strong>
+                  {item.summary ? ` — ${item.summary}` : ""}
+                </p>
+                {item.technologies.length > 0 ? (
+                  <pre>
+                    <span className="k">stack</span> = [{item.technologies.slice(0, 4).map((t) => `"${t}"`).join(", ")}]
+                  </pre>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+          {config.cta_label && config.cta_href ? (
+            <figcaption>
+              The full history, with highlights for each role, is on the{" "}
+              <Link href={config.cta_href}>{config.cta_label.toLowerCase()} page</Link>.
+            </figcaption>
+          ) : null}
+        </figure>
       </div>
     </section>
   );
 }
 
-export function ContactCta({ config, index, profile }: SectionProps & { profile: Profile }) {
+/** Contact in the reference "capstone" layout: rotating seal, copy with proof numbers, actions. */
+export function ContactCta({
+  config,
+  index,
+  profile,
+  stats,
+}: SectionProps & { profile: Profile; stats: { label: string; value: number }[] }) {
+  const seal = `${profile.name || "portfolio"} · ${profile.availability ? "available" : "say hello"} · `.toLowerCase();
   return (
-    <section id="contact" data-section="Contact" className="section">
+    <section id="contact" data-section="Contact" className="capstone">
       <div className="shell">
-        <Reveal y={8} className="panel grid gap-6 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-10 md:p-9">
-          <div>
-            <p className="eyebrow">
+        <div className="spotlight-grid">
+          <svg className="seal" viewBox="0 0 180 180" aria-hidden>
+            <defs>
+              <path id="sealPath" d="M90 90m-68 0a68 68 0 1 1 136 0a68 68 0 1 1 -136 0" />
+            </defs>
+            <circle cx="90" cy="90" r="86" className="ring" />
+            <circle cx="90" cy="90" r="56" className="ring-d" />
+            <g className="seal-spin">
+              <text>
+                <textPath href="#sealPath">{seal.repeat(2)}</textPath>
+              </text>
+            </g>
+            <rect x="44" y="66" width="92" height="48" className="core" />
+            <text x="90" y="97" textAnchor="middle" className="big">
+              HELLO
+            </text>
+          </svg>
+          <div className="spotlight-copy">
+            <span className="eyebrow">
               {index} · {config.eyebrow}
-            </p>
-            <h2 className="headline mt-3 max-w-[24ch]">
+            </span>
+            <h2>
               <AccentText text={config.heading} />
             </h2>
-            {config.body ? <p className="mt-4 max-w-[60ch] text-[1.05rem] leading-[1.6]">{config.body}</p> : null}
+            {config.body ? <p>{config.body}</p> : null}
+            {stats.length > 0 ? (
+              <div className="proof">
+                {stats.map((stat) => (
+                  <span key={stat.label}>
+                    <strong>{stat.value}</strong>
+                    {stat.label}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {profile.location ? <p className="spotlight-note">Based in {profile.location}. Remote-friendly.</p> : null}
           </div>
-          <div className="flex flex-col gap-2.5 sm:flex-row md:flex-col">
+          <div className="spotlight-actions">
             {config.cta_label && config.cta_href ? (
               <Link href={config.cta_href} className="btn btn-primary">
                 {config.cta_label}
-                <ArrowUpRight className="arrow size-4" aria-hidden />
               </Link>
             ) : null}
             {profile.email ? (
               <a href={`mailto:${profile.email}`} className="btn">
-                {profile.email}
+                Email me
               </a>
             ) : null}
+            {profile.socials.slice(0, 1).map((social) => (
+              <a
+                key={social.url}
+                href={social.url}
+                className="btn"
+                {...(isExternal(social.url) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                {social.label} ↗
+              </a>
+            ))}
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
-  );
-}
-
-/** Renders *accent* words in the accent colour without the word-by-word animation. */
-function AccentText({ text }: { text: string }) {
-  return text.split(/(\*[^*]+\*)/).map((part, i) =>
-    part.startsWith("*") && part.endsWith("*") ? (
-      <span key={i} className="accent-serif">
-        {part.slice(1, -1)}
-      </span>
-    ) : (
-      part
-    ),
   );
 }

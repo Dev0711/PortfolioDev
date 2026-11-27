@@ -1,32 +1,42 @@
-import { Reveal, RevealText } from "@/components/motion/reveal";
+import { AccentText } from "@/components/site/accent-text";
 
-/** Shared header for inner pages (Work, About, Contact). */
+/** Inner-page header in the reference style: eyebrow, pixel title, intro, optional stats box. */
 export function PageHero({
   index,
   eyebrow,
   heading,
   body,
+  stats = [],
 }: {
   index: string;
   eyebrow: string;
   heading: string;
   body?: string;
-  /** Kept for call-site compatibility; the paper theme has no generative backdrop. */
+  stats?: { label: string; value: string | number }[];
+  /** Kept for call-site compatibility. */
   seed?: number;
 }) {
   return (
     <header className="border-b border-line">
-      <div className="shell pb-11 pt-24 sm:pt-32">
-        <Reveal y={6}>
-          <p className="eyebrow mb-4">
+      <div className="shell pb-10 pt-24 sm:pt-28">
+        <div className="iv-hero">
+          <p className="eyebrow">
             {index} · {eyebrow}
           </p>
-        </Reveal>
-        <RevealText as="h1" immediate delay={0.05} text={heading} className="display max-w-[22ch]" />
-        {body ? (
-          <Reveal delay={0.2} y={8}>
-            <p className="lede mt-6">{body}</p>
-          </Reveal>
+          <h1 className="lesson-title !mb-0 !mt-3">
+            <AccentText text={heading} />
+          </h1>
+          {body ? <p className="iv-intro !mt-4">{body}</p> : null}
+        </div>
+        {stats.length > 0 ? (
+          <dl className="iv-stats">
+            {stats.map((stat) => (
+              <div key={stat.label}>
+                <dt>{stat.label}</dt>
+                <dd>{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
         ) : null}
       </div>
     </header>

@@ -58,6 +58,8 @@ function rng(seed: number) {
 /** Abstract architecture diagram, unique per slug. */
 export function GenerativeCover({ seed, label }: { seed: string; label?: string }) {
   const random = rng(hashString(seed));
+  // SVG ids must not contain spaces, or url(#…) references silently fail.
+  const uid = seed.replace(/[^a-zA-Z0-9_-]/g, "-");
   const W = 800;
   const H = 600;
   const cols = 4;
@@ -98,18 +100,18 @@ export function GenerativeCover({ seed, label }: { seed: string; label?: string 
       aria-label="Abstract system diagram"
     >
       <defs>
-        <pattern id={`grid-${seed}`} width="40" height="40" patternUnits="userSpaceOnUse">
+        <pattern id={`grid-${uid}`} width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M40 0H0V40" fill="none" stroke="var(--line)" strokeWidth="1" />
         </pattern>
-        <radialGradient id={`glow-${seed}`} cx="50%" cy="50%" r="50%">
+        <radialGradient id={`glow-${uid}`} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="var(--signal)" stopOpacity="0.28" />
           <stop offset="100%" stopColor="var(--signal)" stopOpacity="0" />
         </radialGradient>
       </defs>
 
       <rect width={W} height={H} fill="var(--surface)" />
-      <rect width={W} height={H} fill={`url(#grid-${seed})`} />
-      <circle cx={cx} cy={cy} r="280" fill={`url(#glow-${seed})`} />
+      <rect width={W} height={H} fill={`url(#grid-${uid})`} />
+      <circle cx={cx} cy={cy} r="280" fill={`url(#glow-${uid})`} />
 
       {Array.from({ length: rings }, (_, i) => (
         <circle

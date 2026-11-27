@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { PreviewBanner } from "@/components/site/preview-banner";
 import { MotionProvider, ScrollProgress } from "@/components/site/site-chrome";
-import { getProfile, getSettings } from "@/lib/content/queries";
+import { getProfile, getProjects, getSettings } from "@/lib/content/queries";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,17 +23,27 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
-  const [profile, settings] = await Promise.all([getProfile(), getSettings()]);
+  const [profile, settings, projects] = await Promise.all([getProfile(), getSettings(), getProjects()]);
+  const search = [
+    { label: "Home", href: "/", group: "Page" },
+    ...settings.nav.filter((item) => item.visible && item.href.startsWith("/")).map((item) => ({ label: item.label, href: item.href, group: "Page" })),
+    ...projects.map((project) => ({
+      label: project.title,
+      href: `/work/${project.slug}`,
+      group: "Project",
+      meta: project.category,
+    })),
+  ];
 
   // Accent colours come from site settings and feed the whole design system.
   const theme = { "--signal": settings.accent, "--signal-alt": settings.accent_alt } as CSSProperties;
 
   return (
     <MotionProvider>
-      {/* Apply the saved light/dark choice before first paint. Light is the default. */}
+      {/* Apply the saved light/dark choice (or the device setting) before first paint. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{document.documentElement.dataset.theme=localStorage.getItem("site-theme")==="dark"?"dark":"light"}catch(e){}`,
+          __html: `(function(){var t=null;try{t=localStorage.getItem("site-theme")}catch(e){}if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()`,
         }}
       />
       <div style={theme} className="site relative flex min-h-screen flex-col">
@@ -48,7 +58,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         <ScrollProgress />
-        <Header name={profile.name} title={profile.title} nav={settings.nav} />
+        <Header name={profile.name} title={profile.title} nav={settings.nav} search={search} />
         <main id="main" className="flex-1">
           {children}
         </main>

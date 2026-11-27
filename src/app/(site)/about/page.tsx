@@ -1,21 +1,11 @@
-import { ArrowUpRight, Download } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Parallax } from "@/components/motion/parallax";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
-import { Spotlight } from "@/components/motion/spotlight";
-import { ExperienceList } from "@/components/site/home/sections";
+import { ExperienceList, SectionHead, StepCards } from "@/components/site/home/sections";
 import { PageHero } from "@/components/site/page-hero";
 import { GenerativeCover } from "@/components/site/project-cover";
-import { SectionHeading } from "@/components/site/section-heading";
-import {
-  getCertifications,
-  getEducation,
-  getExperience,
-  getProfile,
-} from "@/lib/content/queries";
-import { pad2 } from "@/lib/utils";
+import { getCertifications, getEducation, getExperience, getProfile } from "@/lib/content/queries";
+import { isExternal, pad2 } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About",
@@ -31,176 +21,185 @@ export default async function AboutPage() {
     getCertifications(),
   ]);
 
+  const socials = [
+    ...(profile.email ? [{ label: "Email", url: `mailto:${profile.email}`, handle: profile.email }] : []),
+    ...profile.socials.map((s) => ({ ...s, handle: s.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "") })),
+    ...(profile.resume_url ? [{ label: "Résumé", url: profile.resume_url, handle: "Download PDF" }] : []),
+  ];
+
   return (
     <>
-      <PageHero index="02" eyebrow="About" heading={profile.about_intro || profile.title} seed={41} />
+      <PageHero index="02" eyebrow="About" heading={profile.about_intro || profile.title} />
 
-      {/* Introduction */}
-      <section className="shell section grid gap-10 md:grid-cols-12" aria-labelledby="about-intro">
-        <Reveal className="md:col-span-5">
-          <div className="relative aspect-[4/5] overflow-hidden border border-ink bg-surface shadow-[var(--shadow-hard)]">
-            <Parallax className="absolute -inset-y-8 inset-x-0" amount={60}>
-              {profile.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={`Portrait of ${profile.name}`}
-                  fill
-                  sizes="(min-width: 768px) 40vw, 100vw"
-                  className="object-cover"
-                />
-              ) : (
+      {/* Maintainer-style introduction: photo, copy, social list */}
+      <section className="maintainer" aria-labelledby="about-name">
+        <div className="shell maintainer-grid">
+          <figure className="maintainer-photo">
+            {profile.avatar_url ? (
+              <Image src={profile.avatar_url} alt={`Portrait of ${profile.name}`} width={240} height={240} />
+            ) : (
+              <div className="relative aspect-square overflow-hidden border border-ink bg-surface shadow-[var(--shadow-hard)]">
                 <GenerativeCover seed={`about-${profile.name}`} label={profile.title} />
-              )}
-            </Parallax>
-          </div>
-        </Reveal>
-
-        <div className="md:col-span-6 md:col-start-7">
-          <Reveal>
-            <p id="about-intro" className="eyebrow mb-3">
-              Introduction
-            </p>
-            <h2 className="headline">
-              {profile.name}
-              
-            </h2>
-            {profile.title ? <p className="mt-2 font-mono text-[0.8rem] text-signal">{profile.title}</p> : null}
-          </Reveal>
-          {profile.about_body ? (
-            <Reveal delay={0.1}>
-              <div className="prose-site mt-6" dangerouslySetInnerHTML={{ __html: profile.about_body }} />
-            </Reveal>
-          ) : null}
-          <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-2.5">
-            {profile.resume_url ? (
-                              <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                  <Download className="size-4" aria-hidden />
+              </div>
+            )}
+            <figcaption>FIG_ME · {profile.location || "portrait"}</figcaption>
+          </figure>
+          <div className="maintainer-copy">
+            <span className="eyebrow">Introduction</span>
+            <h2 id="about-name">{profile.name}</h2>
+            {profile.title ? <p className="maintainer-role">{profile.title}</p> : null}
+            {profile.about_body ? (
+              <div className="prose-site !text-[1.02rem]" dangerouslySetInnerHTML={{ __html: profile.about_body }} />
+            ) : null}
+            <div className="maintainer-actions">
+              <Link href="/contact" className="btn btn-primary">
+                Get in touch
+              </Link>
+              {profile.resume_url ? (
+                <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="btn">
                   Download résumé
                 </a>
-                          ) : null}
-                          <Link href="/contact" className="btn">
-                Get in touch
-                <ArrowUpRight className="arrow size-4" aria-hidden />
-              </Link>
-                      </Reveal>
+              ) : null}
+            </div>
+          </div>
+          {socials.length > 0 ? (
+            <nav className="social-list" aria-label="Profiles">
+              {socials.map((social) => (
+                <a
+                  key={social.url}
+                  href={social.url}
+                  className="social-row !grid-cols-[5.5rem_minmax(0,1fr)]"
+                  {...(isExternal(social.url) && !social.url.startsWith("mailto:")
+                    ? { target: "_blank", rel: "noopener noreferrer me" }
+                    : {})}
+                >
+                  <span className="social-label">{social.label}</span>
+                  <span className="social-handle truncate">{social.handle}</span>
+                </a>
+              ))}
+            </nav>
+          ) : null}
         </div>
       </section>
 
-      {/* Career journey */}
+      {/* Career journey: two-column preface with a drop cap */}
       {profile.journey ? (
-        <section className="border-t border-line">
-          <div className="shell section grid gap-10 md:grid-cols-12">
-            <Reveal className="md:col-span-3">
-              <p className="eyebrow">01 · Career journey</p>
-            </Reveal>
-            <Reveal delay={0.1} className="md:col-span-8">
-              <div className="prose-site !text-[clamp(1.08rem,1.4vw,1.2rem)]" dangerouslySetInnerHTML={{ __html: profile.journey }} />
-            </Reveal>
+        <section className="bp-section">
+          <div className="shell">
+            <h2 className="stat-title">01 · Career journey</h2>
+            <div className="preface-body" dangerouslySetInnerHTML={{ __html: profile.journey }} />
           </div>
         </section>
       ) : null}
 
-      {/* Areas of interest */}
+      {/* Areas of interest: phase cards */}
       {profile.interests.length > 0 ? (
-        <section className="border-t border-line">
-          <div className="shell section">
-            <SectionHeading index="02" eyebrow="Areas of interest" heading="What I like *working on.*" />
-            <Stagger className="mt-8 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="toc">
+          <div className="shell">
+            <div className="toc-title">02 · Areas of interest</div>
+            <div className="toc-subtitle">What I like working on, and keep coming back to.</div>
+            <div className="phase-grid">
               {profile.interests.map((interest, i) => (
-                <StaggerItem key={interest.title + i} className="h-full">
-                  <Spotlight className="h-full border border-line bg-surface p-5 transition-colors hover:border-signal">
-                    <p className="label mb-5 !text-signal">{pad2(i + 1)}</p>
-                    <h3 className="title">{interest.title}</h3>
-                    {interest.body ? <p className="mt-2 text-[1rem] leading-[1.5] text-ink-dim">{interest.body}</p> : null}
-                  </Spotlight>
-                </StaggerItem>
+                <div key={interest.title + i} className="phase-card">
+                  <div className="phase-card-top">
+                    <span className="phase-card-num">
+                      <i className="status complete" aria-hidden />
+                      Interest {pad2(i + 1)}
+                    </span>
+                  </div>
+                  <h3 className="phase-card-name">{interest.title}</h3>
+                  <p className="phase-card-desc">{interest.body}</p>
+                  <div className="phase-card-bar">
+                    <span style={{ width: `${Math.round(((i + 1) / profile.interests.length) * 100)}%` }} />
+                  </div>
+                  <div className="phase-card-foot">
+                    <span>
+                      {pad2(i + 1)} / {pad2(profile.interests.length)}
+                    </span>
+                  </div>
+                </div>
               ))}
-            </Stagger>
+            </div>
           </div>
         </section>
       ) : null}
 
-      {/* Technical philosophy */}
+      {/* Technical philosophy: step cards */}
       {profile.philosophy.length > 0 ? (
-        <section className="border-t border-line">
-          <div className="shell section">
-            <SectionHeading index="03" eyebrow="Technical philosophy" heading="How I think about *engineering.*" />
-            <Stagger as="ol" className="mt-8 border-t border-line">
-              {profile.philosophy.map((item, i) => (
-                <StaggerItem
-                  as="li"
-                  key={item.title + i}
-                  className="grid gap-2 border-b border-line py-6 md:grid-cols-12 md:gap-6"
-                >
-                  <span className="pt-1 font-mono text-[0.8rem] text-signal md:col-span-1">{pad2(i + 1)}</span>
-                  <h3 className="title !text-[1.3rem] md:col-span-5">{item.title}</h3>
-                  <p className="leading-[1.6] text-ink-dim md:col-span-6">{item.body}</p>
-                </StaggerItem>
-              ))}
-            </Stagger>
+        <section className="bp-section">
+          <div className="shell">
+            <SectionHead index="03" eyebrow="Technical philosophy" heading="How I think about *engineering.*" />
+            <StepCards items={profile.philosophy} />
           </div>
         </section>
       ) : null}
 
       {/* Experience */}
       {experience.length > 0 ? (
-        <section className="border-t border-line">
-          <div className="shell section">
-            <SectionHeading index="04" eyebrow="Experience" heading="Where I have been *building.*" />
-            <div className="mt-8">
-              <ExperienceList items={experience} />
+        <section className="bp-section">
+          <div className="shell">
+            <SectionHead index="04" eyebrow="Experience" heading="Where I have been *building.*" />
+            <ExperienceList items={experience} />
+          </div>
+        </section>
+      ) : null}
+
+      {/* Certifications as the reference "book" covers */}
+      {certifications.length > 0 ? (
+        <section className="books">
+          <div className="shell">
+            <h2 className="stat-title !mb-2">05 · Certifications</h2>
+            <div className="books-grid">
+              {certifications.map((item, i) => (
+                <article key={item.id} className="book">
+                  <div className="book-cover">
+                    <span className="book-vol">
+                      {[item.issuer, item.year].filter(Boolean).join(" · ") || `No. ${pad2(i + 1)}`}
+                    </span>
+                    <span className="book-name">{item.name}</span>
+                    <span className="book-glyph" aria-hidden>
+                      {pad2(i + 1)}
+                    </span>
+                  </div>
+                  <div className="book-meta">
+                    <p>{item.issuer ? `Issued by ${item.issuer}.` : "Certification."}</p>
+                    {item.url ? (
+                      <div className="book-links">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="btn !min-h-9 !px-2.5 !text-[0.74rem]">
+                          Verify ↗
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="book-status">{item.year ? `Earned ${item.year}` : "Earned"}</span>
+                    )}
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
       ) : null}
 
-      {/* Education & certifications */}
-      {education.length > 0 || certifications.length > 0 ? (
-        <section className="border-t border-line">
-          <div className="shell section grid gap-12 md:grid-cols-2 md:gap-10">
-            {education.length > 0 ? (
-              <div>
-                <Reveal>
-                  <p className="eyebrow mb-4">05 · Education</p>
-                </Reveal>
-                <Stagger as="ul" className="border-t border-line">
-                  {education.map((item) => (
-                    <StaggerItem as="li" key={item.id} className="border-b border-line py-5">
-                      <p className="label mb-2">
-                        {[item.start_year, item.end_year].filter(Boolean).join(" — ")}
-                      </p>
-                      <h3 className="title">{item.institution}</h3>
-                      <p className="mt-2 text-ink-dim">{[item.degree, item.field].filter(Boolean).join(", ")}</p>
-                      {item.notes ? <p className="mt-2 text-[0.98rem] leading-[1.5] text-ink-dim">{item.notes}</p> : null}
-                    </StaggerItem>
-                  ))}
-                </Stagger>
-              </div>
-            ) : null}
-
-            {certifications.length > 0 ? (
-              <div>
-                <Reveal>
-                  <p className="eyebrow mb-4">06 · Certifications</p>
-                </Reveal>
-                <Stagger as="ul" className="border-t border-line">
-                  {certifications.map((item) => (
-                    <StaggerItem as="li" key={item.id} className="border-b border-line py-5">
-                      <p className="label mb-2">{[item.issuer, item.year].filter(Boolean).join(" · ")}</p>
-                      <h3 className="title">
-                        {item.url ? (
-                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="link-line">
-                            {item.name}
-                          </a>
-                        ) : (
-                          item.name
-                        )}
-                      </h3>
-                    </StaggerItem>
-                  ))}
-                </Stagger>
-              </div>
-            ) : null}
+      {/* Education as interview-style rows */}
+      {education.length > 0 ? (
+        <section className="bp-section">
+          <div className="shell">
+            <h2 className="stat-title !mb-2">06 · Education</h2>
+            <ul className="iv-list">
+              {education.map((item, i) => (
+                <li key={item.id} className="iv-row !grid-cols-[40px_1fr_auto]">
+                  <span className="iv-row-num">{pad2(i + 1)}</span>
+                  <span>
+                    <span className="iv-row-title block">{item.institution}</span>
+                    <span className="block text-[0.95rem] text-ink-dim">
+                      {[item.degree, item.field].filter(Boolean).join(", ")}
+                      {item.notes ? ` — ${item.notes}` : ""}
+                    </span>
+                  </span>
+                  <span className="iv-level">{[item.start_year, item.end_year].filter(Boolean).join("–") || "—"}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       ) : null}

@@ -30,10 +30,24 @@ export default async function HomePage() {
   const featured = projects.filter((project) => project.featured);
   const showcase = (featured.length > 0 ? featured : projects).slice(0, 5);
 
+  const tools = categories.reduce((sum, category) => sum + category.skills.length, 0);
+  const stats = [
+    { label: "projects", value: projects.length },
+    { label: "tools", value: tools },
+    { label: "roles", value: experience.length },
+  ].filter((stat) => stat.value > 0);
+
   // Sections render in the order and visibility chosen in Admin → Settings.
   let counter = 0;
   const render = (config: HomeSection): ReactNode => {
-    if (config.key === "stack") return <StackMarquee key={config.key} categories={categories} eyebrow={config.eyebrow} />;
+    if (config.key === "stack") return (
+        <StackMarquee
+          key={config.key}
+          categories={categories}
+          eyebrow={config.eyebrow}
+          quote={profile.philosophy[0]?.title}
+        />
+      );
     const index = pad2(++counter);
     switch (config.key) {
       case "featured":
@@ -45,13 +59,13 @@ export default async function HomePage() {
       case "experience":
         return <ExperienceSection key={config.key} config={config} index={index} items={experience.slice(0, 4)} />;
       case "contact":
-        return <ContactCta key={config.key} config={config} index={index} profile={profile} />;
+        return <ContactCta key={config.key} config={config} index={index} profile={profile} stats={stats} />;
     }
   };
 
   return (
     <>
-      <Hero profile={profile} settings={settings} />
+      <Hero profile={profile} settings={settings} projects={showcase} categories={categories} />
       {settings.home_sections.filter((section) => section.visible).map(render)}
     </>
   );

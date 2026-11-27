@@ -63,7 +63,7 @@ export function ContactForm() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="panel flex min-h-[22rem] flex-col items-start justify-center p-7 md:p-10"
+            className="flex min-h-[18rem] flex-col items-start justify-center border-t border-line pt-6"
           >
             <span className="flex size-11 items-center justify-center bg-signal text-background">
               <Check className="size-5" aria-hidden />
@@ -166,7 +166,7 @@ export function ContactForm() {
 }
 
 const inputClass =
-  "w-full border border-line-strong bg-base px-3 py-2.5 text-[1.05rem] text-ink placeholder:text-ink-faint transition-colors focus:border-signal focus:outline-none focus:ring-0 aria-[invalid=true]:border-destructive";
+  "w-full border border-line bg-surface px-3 py-2.5 text-[1.02rem] text-ink placeholder:text-ink-faint transition-colors focus:border-signal focus:outline-none focus:ring-0 aria-[invalid=true]:border-destructive";
 
 function Field({
   id,
@@ -183,7 +183,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="label mb-2 flex items-center justify-between !text-ink-dim">
+      <label htmlFor={id} className="quiz-stage !mb-2 flex items-center justify-between">
         {label}
         {optional ? <span className="normal-case tracking-normal">Optional</span> : null}
       </label>

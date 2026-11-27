@@ -4,10 +4,21 @@ import { Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { SearchPalette, type PaletteItem } from "@/components/site/search-palette";
 import type { NavItem } from "@/lib/types";
 import { cn, isExternal } from "@/lib/utils";
 
-export function Header({ name, title, nav }: { name: string; title: string; nav: NavItem[] }) {
+export function Header({
+  name,
+  title,
+  nav,
+  search,
+}: {
+  name: string;
+  title: string;
+  nav: NavItem[];
+  search: PaletteItem[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,6 +70,7 @@ export function Header({ name, title, nav }: { name: string; title: string; nav:
           ))}
         </nav>
 
+        <SearchPalette items={search} />
         <ThemeToggle />
 
         <button

@@ -1,90 +1,130 @@
-import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Reveal, RevealText } from "@/components/motion/reveal";
+import { AccentText } from "@/components/site/accent-text";
+import { CopyChip } from "@/components/site/copy-chip";
 import { LocalClock } from "@/components/site/local-clock";
 import { BackgroundVideo } from "@/components/site/media-backdrop";
 import { plainHeadline } from "@/lib/content/text";
-import type { Profile, SiteSettings } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import type { Profile, Project, SiteSettings, SkillCategory } from "@/lib/types";
+import { cn, isExternal, pad2 } from "@/lib/utils";
 
 /**
- * Masthead: pixel-type headline, serif intro, square buttons, and an
- * "at a glance" panel beside it on wide screens (below it on phones).
+ * Masthead in the reference layout: pixel title, serif tagline, italic
+ * attribution, square buttons, a "Start here" box of featured projects and a
+ * terminal-style contact box with a copy button.
  */
-export function Hero({ profile, settings }: { profile: Profile; settings: SiteSettings }) {
+export function Hero({
+  profile,
+  settings,
+  projects,
+  categories,
+}: {
+  profile: Profile;
+  settings: SiteSettings;
+  projects: Project[];
+  categories: SkillCategory[];
+}) {
   const cta = settings.hero_cta;
   const long = plainHeadline(profile.hero_headline).length > 34;
-
-  const facts = [
-    profile.title ? { label: "Role", value: profile.title } : null,
-    profile.availability ? { label: "Status", value: profile.availability, live: true } : null,
-    profile.location ? { label: "Based in", value: profile.location } : null,
-    profile.timezone ? { label: "Local time", value: <LocalClock timezone={profile.timezone} /> } : null,
-  ].filter((fact) => fact !== null);
+  const start = projects.slice(0, 4);
+  const tools = categories.flatMap((c) => c.skills.map((s) => s.name)).slice(0, 4);
+  const attribution = [profile.availability, profile.location ? `Based in ${profile.location}` : ""].filter(Boolean);
 
   return (
     <section id="top" data-section="Intro" className="border-b border-line">
-      <div className="shell pb-11 pt-24 sm:pt-32 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] lg:items-center lg:gap-12">
-        <div>
-          <RevealText
-            as="h1"
-            immediate
-            delay={0.05}
-            text={profile.hero_headline}
-            className={cn("display-pixel max-w-[22ch]", long && "!text-[clamp(2.2rem,5.4vw,3.7rem)]")}
-          />
+      <div className="masthead shell border-b-0">
+        <h1 className={cn("masthead-title", long && "!text-[clamp(2.2rem,5.4vw,3.9rem)]")}>
+          <AccentText text={profile.hero_headline} />
+          <span className="cursor" aria-hidden />
+        </h1>
 
-          {profile.hero_description ? (
-            <Reveal delay={0.2} y={8}>
-              <p className="lede mb-2 mt-7">{profile.hero_description}</p>
-            </Reveal>
+        {profile.hero_description ? <p className="masthead-tagline">{profile.hero_description}</p> : null}
+        {attribution.length > 0 ? (
+          <p className="masthead-attribution">
+            {attribution.join(". ")}
+            {profile.timezone ? (
+              <>
+                . Local time <LocalClock timezone={profile.timezone} />.
+              </>
+            ) : null}
+          </p>
+        ) : null}
+
+        <div className="masthead-cta">
+          {cta.primary_label && cta.primary_href ? (
+            <Link href={cta.primary_href} className="btn btn-primary">
+              {cta.primary_label}
+            </Link>
           ) : null}
-
-          <Reveal delay={0.3} y={8} className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2.5">
-            {cta.primary_label && cta.primary_href ? (
-              <Link href={cta.primary_href} className="btn btn-primary max-sm:w-full">
-                {cta.primary_label}
-                <ArrowUpRight className="arrow size-4" aria-hidden />
-              </Link>
-            ) : null}
-            {cta.secondary_label && cta.secondary_href ? (
-              <Link href={cta.secondary_href} className="btn max-sm:w-full">
-                {cta.secondary_label}
-              </Link>
-            ) : null}
-            {profile.email ? (
-              <a
-                href={`mailto:${profile.email}`}
-                className="inline-flex min-h-8 items-center px-1.5 font-mono text-[0.82rem] text-ink-dim transition-colors hover:text-signal"
-              >
-                {profile.email}
-              </a>
-            ) : null}
-          </Reveal>
+          {cta.secondary_label && cta.secondary_href ? (
+            <Link href={cta.secondary_href} className="btn">
+              {cta.secondary_label}
+            </Link>
+          ) : null}
+          {profile.socials.slice(0, 3).map((social) => (
+            <a
+              key={social.url}
+              href={social.url}
+              className="btn btn--quiet"
+              {...(isExternal(social.url) ? { target: "_blank", rel: "noopener noreferrer me" } : {})}
+            >
+              {social.label} ↗
+            </a>
+          ))}
         </div>
 
-        {facts.length > 0 ? (
-          <Reveal delay={0.35} y={8} className="mt-8 lg:mt-0">
-            <aside className="panel" aria-labelledby="glance-title">
-              <p id="glance-title" className="eyebrow border-b border-line px-4 py-3 !text-[0.7rem] !tracking-[0.14em]">
-                At a glance
-              </p>
-              <dl>
-                {facts.map((fact) => (
-                  <div key={fact.label} className="border-b border-line px-4 py-3.5 last:border-b-0">
-                    <dt className="label !text-[0.68rem] !tracking-[0.08em] !text-ink-dim">{fact.label}</dt>
-                    <dd className="mt-0.5 flex items-center gap-2 text-[1.05rem] leading-snug">
-                      {"live" in fact && fact.live ? (
-                        <span aria-hidden className="size-2 shrink-0 bg-signal [animation:pulse-dot_2.4s_ease-in-out_infinite]" />
-                      ) : null}
-                      {fact.value}
-                    </dd>
-                  </div>
+        {start.length > 0 ? (
+          <nav className="start-box" aria-labelledby="start-title">
+            <p className="start-box-title" id="start-title">
+              Start here
+            </p>
+            <ul className="start-list">
+              {start.map((project, i) => (
+                <li key={project.id}>
+                  <Link className="start-row" href={`/work/${project.slug}`}>
+                    <span className="start-who">{project.category || "Project"}</span>
+                    <span className="start-lesson">
+                      <span className="start-phase">{pad2(i + 1)}</span>
+                      {project.title}
+                    </span>
+                    <span className="start-time">{project.timeframe ? `${project.timeframe} →` : "Read →"}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link className="start-more" href="/work">
+              Browse all projects →
+            </Link>
+          </nav>
+        ) : null}
+
+        {profile.email ? (
+          <div className="terminal">
+            <div className="terminal-bar">
+              <span>Get in touch</span>
+              <CopyChip value={profile.email} label="Copy email address" />
+            </div>
+            <pre>
+              <span>mailto:{profile.email}</span>
+              {"\n"}
+              <span className="p">&gt;</span>{" "}
+              <span className="b">{profile.availability || "Replies within a couple of days."}</span>
+            </pre>
+            {tools.length > 0 ? (
+              <div className="terminal-agents" aria-label="Main tools">
+                {tools.map((tool) => (
+                  <span key={tool}>{tool}</span>
                 ))}
-              </dl>
-            </aside>
-          </Reveal>
+                <span>+ more below</span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {profile.email ? (
+          <p className="terminal-caption">
+            {profile.title ? `${profile.title}. ` : ""}
+            <Link href="/contact">Send a message →</Link>
+          </p>
         ) : null}
       </div>
 
